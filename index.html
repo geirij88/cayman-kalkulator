@@ -1,0 +1,338 @@
+<!doctype html>
+<html lang="no">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Cayman-kalkulator</title>
+    <link rel="stylesheet" href="styles.css?v=20260514-6" />
+  </head>
+  <body>
+    <main class="app">
+      <section class="hero">
+        <p class="eyebrow">Forhandlingsmodell</p>
+        <h1>Cayman-kalkulator</h1>
+        <p>Regn om norsk årslønn til ny Cayman-lønn når skatt, frivillig folketrygd og tapte pensjonsordninger må dekkes selv.</p>
+      </section>
+
+      <section class="info-box full-width-info">
+        <h2>Viktig å vite</h2>
+        <p>Dette er en forhandlingskalkyle, ikke en komplett skattemelding. Skatt er individuelt og påvirkes av fradrag, gjeldsrenter, familieforhold, bosted og andre personlige forhold.</p>
+        <p>Kalkylen holder privatøkonomi utenfor og viser verdien av norsk ansettelse/CBA som kan falle bort ved utflagging.</p>
+      </section>
+
+      <section class="calculator">
+        <form class="panel" id="caymanForm">
+          <label>
+            Grunnlønn
+            <div class="money-input">
+              <input id="annualSalary" type="number" min="0" step="10000" value="1000000" />
+              <span>kr/år</span>
+            </div>
+          </label>
+
+          <fieldset>
+            <legend>Kostnader som må erstattes</legend>
+            <label>
+              Frivillig folketrygd arbeidsgiverdel
+              <select id="navRate">
+                <option value="14.1" selected>14,1 % full dekning</option>
+                <option value="13.9">13,9 % helse, sykepenger og pensjon</option>
+                <option value="9.2">9,2 % helse og pensjon</option>
+                <option value="7">7,0 % helse med sykepenger</option>
+                <option value="2.3">2,3 % helsedel</option>
+                <option value="0">0 % ikke beregnet</option>
+              </select>
+            </label>
+            <section class="mpk-info">
+              <h2>MPK arbeidsgiverandel</h2>
+              <p>Arbeidsgiverpremien utgjør 3,3 % av bruttoinntekten om bord. Arbeidstakerpremien er 1,7 %. Premien beregnes hver kalendermåned av maks 12G av årlig bruttoinntekt om bord.</p>
+              <table class="mini-table">
+                <tbody>
+                  <tr>
+                    <td>Grunnlag</td>
+                    <td id="mpkBasis">0 kr</td>
+                    <td>3,3 %</td>
+                    <td id="mpkValuePreview">0 kr</td>
+                  </tr>
+                </tbody>
+              </table>
+            </section>
+            <section class="pension-info">
+              <h2>Innskuddspensjon</h2>
+              <p>Pensjon i DnB</p>
+              <p>Innskuddsplanen er 3 % fra 0 til 7,1G og 15 % fra 7,1 til 12G. 1G er 130 160 kr, siste publiserte NAV-sats per 1. mai 2025.</p>
+              <table class="mini-table">
+                <tbody>
+                  <tr>
+                    <td>0 til 7,1G</td>
+                    <td id="pensionLowBasis">0 kr</td>
+                    <td>3 %</td>
+                    <td id="pensionLowValue">0 kr</td>
+                  </tr>
+                  <tr>
+                    <td>7,1 til 12G</td>
+                    <td id="pensionHighBasis">0 kr</td>
+                    <td>15 %</td>
+                    <td id="pensionHighValue">0 kr</td>
+                  </tr>
+                  <tr>
+                    <td colspan="3">Beregnet innskuddspensjon</td>
+                    <td id="pensionTotalPreview">0 kr</td>
+                  </tr>
+                </tbody>
+              </table>
+            </section>
+            <section class="pension-info tax-table-card compact-tax-table">
+              <h2>Trinnskatt 2026</h2>
+              <table class="tax-table">
+                <thead>
+                  <tr>
+                    <th>Trinn</th>
+                    <th>Personinntekt</th>
+                    <th>Sats</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td>0</td>
+                    <td>0 - 226 100 kr</td>
+                    <td>0 %</td>
+                  </tr>
+                  <tr>
+                    <td>1</td>
+                    <td>226 101 - 318 300 kr</td>
+                    <td>1,7 %</td>
+                  </tr>
+                  <tr>
+                    <td>2</td>
+                    <td>318 301 - 725 050 kr</td>
+                    <td>4,0 %</td>
+                  </tr>
+                  <tr>
+                    <td>3</td>
+                    <td>725 051 - 980 100 kr</td>
+                    <td>13,7 %</td>
+                  </tr>
+                  <tr>
+                    <td>4</td>
+                    <td>980 101 - 1 467 200 kr</td>
+                    <td>16,8 %</td>
+                  </tr>
+                  <tr>
+                    <td>5</td>
+                    <td>Fra 1 467 201 kr</td>
+                    <td>17,8 %</td>
+                  </tr>
+                </tbody>
+              </table>
+              <p class="mini-note">Trinnskatt beregnes bare på delen av inntekten som ligger innenfor hvert trinn.</p>
+              <p class="mini-note">
+                Kilde:
+                <a href="https://www.skatteetaten.no/satser/trinnskatt/" target="_blank" rel="noopener noreferrer">
+                  Skatteetaten - trinnskatt
+                </a>
+              </p>
+            </section>
+          </fieldset>
+
+          <p class="hint">Modellen bruker forenklet 22 % skatt på alminnelig inntekt, 7,6 % trygdeavgift og trinnskatt for 2026.</p>
+        </form>
+
+        <section class="result-panel">
+          <article class="equation-card primary-equation">
+            <h2>1. Norsk lønn i dag</h2>
+            <div class="equation-list">
+              <div>
+                <span>Forenklet alminnelig skatt 22 %</span>
+                <strong id="commonTax">0 kr</strong>
+              </div>
+              <div>
+                <span>Trygdeavgift 7,6 %</span>
+                <strong id="socialTax">0 kr</strong>
+              </div>
+              <div>
+                <span id="bracketTaxLabel">Trinnskatt</span>
+                <strong id="bracketTax">0 kr</strong>
+              </div>
+              <div>
+                <span>= Total skatt</span>
+                <strong id="totalTax">0 kr</strong>
+              </div>
+              <div class="net-line">
+                <span>= Netto utbetalt</span>
+                <strong id="netSalary">0 kr</strong>
+              </div>
+            </div>
+          </article>
+
+          <article class="equation-card">
+            <h2>2. Dette må arbeidsgiver erstatte</h2>
+            <div class="equation-list">
+              <div>
+                <span>Frivillig folketrygd</span>
+                <strong id="navCost">0 kr</strong>
+              </div>
+              <div>
+                <span>MPK arbeidsgiverandel</span>
+                <strong id="mpkCost">0 kr</strong>
+              </div>
+              <div>
+                <span>Innskuddspensjon</span>
+                <strong id="cbaPensionCost">0 kr</strong>
+              </div>
+              <div class="net-line">
+                <span>= Samlet verdi</span>
+                <strong id="directValue">0 kr</strong>
+              </div>
+            </div>
+          </article>
+
+          <article class="equation-card compensation-card">
+            <h2>3. Gross-up kompensasjon</h2>
+            <p class="card-lead">Ekstra lønn skattlegges også. Derfor må brutto kompensasjon være høyere enn verdien som faktisk skal dekkes.</p>
+            <div class="equation-list">
+              <div>
+                <span>Faktisk verdi som må dekkes</span>
+                <strong id="grossUpBase">0 kr</strong>
+              </div>
+              <div>
+                <span>Skatt på ekstra lønn</span>
+                <strong id="grossUpTax">0 kr</strong>
+              </div>
+              <div>
+                <span id="compBracketTaxLabel">Herav trinnskatt</span>
+                <strong id="compBracketTax">0 kr</strong>
+              </div>
+              <div class="net-line">
+                <span>= Brutto kompensasjon</span>
+                <strong id="grossCompensation">0 kr</strong>
+              </div>
+              <div>
+                <span>Likeverdig årslønn</span>
+                <strong id="equivalentSalary">0 kr</strong>
+              </div>
+              <div>
+                <span>Likeverdig månedslønn</span>
+                <strong id="monthlyEquivalentSalary">0 kr</strong>
+              </div>
+              <div>
+                <span>Snittskatt på komp.</span>
+                <strong id="marginalTax">0,0 %</strong>
+              </div>
+            </div>
+            <p class="mini-note" id="summaryText"></p>
+            <p class="warning-note" id="bracketWarning" hidden></p>
+          </article>
+
+          <article class="equation-card euro-card">
+            <h2>4. EURO Simulator</h2>
+            <p class="card-lead">Test hva den likeverdige lønnen blir i euro, og hva et euro-tilbud blir verdt i norske kroner når EUR/NOK endrer seg.</p>
+
+            <div class="simulator-inputs">
+              <label>
+                EUR/NOK-kurs
+                <input id="eurRate" type="number" min="1" step="0.01" value="10.78" />
+              </label>
+              <label>
+                Test euro-årslønn
+                <div class="money-input">
+                  <input id="eurOffer" type="number" min="0" step="1000" value="0" />
+                  <span>EUR/år</span>
+                </div>
+              </label>
+            </div>
+
+            <div class="equation-list">
+              <div>
+                <span>Likeverdig årslønn</span>
+                <strong id="equivalentEuroYear">0 EUR</strong>
+              </div>
+              <div>
+                <span>Likeverdig månedslønn</span>
+                <strong id="equivalentEuroMonth">0 EUR</strong>
+              </div>
+              <div>
+                <span>Testet EUR-lønn i NOK</span>
+                <strong id="eurOfferNokYear">0 kr</strong>
+              </div>
+              <div class="net-line">
+                <span>Per måned i NOK</span>
+                <strong id="eurOfferNokMonth">0 kr</strong>
+              </div>
+            </div>
+            <p class="mini-note" id="euroNote">Endre kursen for å se hvordan samme euro-lønn slår ut i NOK.</p>
+          </article>
+
+        </section>
+      </section>
+
+      <section class="print-summary">
+        <header>
+          <p>Forhandlingsmodell</p>
+          <h1>Cayman-kalkulator</h1>
+          <span>Forenklet kalkyle. Skatt er individuelt, og privatøkonomi/fradrag er ikke medregnet.</span>
+        </header>
+
+        <div class="print-grid">
+          <article>
+            <h2>1. Norsk lønn i dag</h2>
+            <dl>
+              <dt>Grunnlønn</dt>
+              <dd id="printAnnualSalary">0 kr</dd>
+              <dt>Total skatt</dt>
+              <dd id="printTotalTax">0 kr</dd>
+              <dt>Netto utbetalt</dt>
+              <dd id="printNetSalary">0 kr</dd>
+            </dl>
+          </article>
+
+          <article>
+            <h2>2. Må erstattes</h2>
+            <dl>
+              <dt>Frivillig folketrygd</dt>
+              <dd id="printNavCost">0 kr</dd>
+              <dt>MPK arbeidsgiverandel</dt>
+              <dd id="printMpkCost">0 kr</dd>
+              <dt>Innskuddspensjon</dt>
+              <dd id="printPensionCost">0 kr</dd>
+              <dt>Samlet verdi</dt>
+              <dd id="printDirectValue">0 kr</dd>
+            </dl>
+          </article>
+
+          <article>
+            <h2>3. Gross-up</h2>
+            <dl>
+              <dt>Skatt på ekstra lønn</dt>
+              <dd id="printGrossUpTax">0 kr</dd>
+              <dt>Brutto kompensasjon</dt>
+              <dd id="printGrossCompensation">0 kr</dd>
+              <dt>Likeverdig årslønn</dt>
+              <dd id="printEquivalentSalary">0 kr</dd>
+              <dt>Likeverdig månedslønn</dt>
+              <dd id="printMonthlyEquivalentSalary">0 kr</dd>
+            </dl>
+          </article>
+
+          <article>
+            <h2>4. Euro</h2>
+            <dl>
+              <dt>EUR/NOK</dt>
+              <dd id="printEurRate">0</dd>
+              <dt>Likeverdig EUR/år</dt>
+              <dd id="printEquivalentEuroYear">0 EUR</dd>
+              <dt>Likeverdig EUR/mnd</dt>
+              <dd id="printEquivalentEuroMonth">0 EUR</dd>
+            </dl>
+          </article>
+        </div>
+
+        <footer>
+          <p>Forutsetninger: 22 % forenklet alminnelig skatt, 7,6 % trygdeavgift, trinnskatt 2026, MPK 3,3 % opp til 12G, innskuddspensjon 3 % til 7,1G og 15 % fra 7,1G til 12G. 1G = 130 160 kr.</p>
+        </footer>
+      </section>
+    </main>
+
+    <script src="app.js?v=20260514-6"></script>
+  </body>
+</html>
