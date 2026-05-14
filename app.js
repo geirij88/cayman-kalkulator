@@ -50,6 +50,9 @@ const output = {
   equivalentSalary: document.querySelector("#equivalentSalary"),
   monthlyEquivalentSalary: document.querySelector("#monthlyEquivalentSalary"),
   marginalTax: document.querySelector("#marginalTax"),
+  mobileAnnualSalary: document.querySelector("#mobileAnnualSalary"),
+  mobileDirectValue: document.querySelector("#mobileDirectValue"),
+  mobileEquivalentSalary: document.querySelector("#mobileEquivalentSalary"),
   equivalentEuroMonth: document.querySelector("#equivalentEuroMonth"),
   equivalentEuroYear: document.querySelector("#equivalentEuroYear"),
   euroNote: document.querySelector("#euroNote"),
@@ -218,12 +221,15 @@ function calculate() {
   output.pensionHighValue.textContent = kroner(dnbPension.highValue);
   output.pensionTotalPreview.textContent = kroner(dnbPension.total);
   output.directValue.textContent = kroner(directValue);
+  output.mobileAnnualSalary.textContent = kroner(annualSalary);
+  output.mobileDirectValue.textContent = kroner(directValue);
   output.grossUpBase.textContent = kroner(directValue);
   output.grossUpTax.textContent = kroner(grossUp.taxOnCompensation);
   output.compBracketTaxLabel.textContent = `Herav trinnskatt (${findTaxBracket(equivalentSalary)})`;
   output.compBracketTax.textContent = kroner(compBracketTax);
   output.grossCompensation.textContent = kroner(grossUp.grossCompensation);
   output.equivalentSalary.textContent = kroner(equivalentSalary);
+  output.mobileEquivalentSalary.textContent = kroner(equivalentSalary);
   output.monthlyEquivalentSalary.textContent = kroner(equivalentSalary / 12);
   output.marginalTax.textContent = `${percent.format(marginalTaxRate * 100)} %`;
   output.summaryText.textContent =

@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cayman-kalkulator</title>
-    <link rel="stylesheet" href="styles.css?v=20260514-6" />
+    <link rel="stylesheet" href="styles.css?v=20260514-7" />
   </head>
   <body>
     <main class="app">
@@ -139,6 +139,22 @@
         </form>
 
         <section class="result-panel">
+          <article class="mobile-summary">
+            <h2>Hovedsvar</h2>
+            <div>
+              <span>Grunnlønn</span>
+              <strong id="mobileAnnualSalary">0 kr</strong>
+            </div>
+            <div>
+              <span>Dette må erstattes</span>
+              <strong id="mobileDirectValue">0 kr</strong>
+            </div>
+            <div class="mobile-summary-main">
+              <span>Ny Cayman-lønn</span>
+              <strong id="mobileEquivalentSalary">0 kr</strong>
+            </div>
+          </article>
+
           <article class="equation-card primary-equation">
             <h2>1. Norsk lønn i dag</h2>
             <div class="equation-list">
@@ -333,6 +349,6 @@
       </section>
     </main>
 
-    <script src="app.js?v=20260514-6"></script>
+    <script src="app.js?v=20260514-7"></script>
   </body>
 </html>

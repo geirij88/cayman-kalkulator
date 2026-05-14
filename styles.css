@@ -205,6 +205,10 @@ fieldset {
   gap: 14px;
 }
 
+.mobile-summary {
+  display: none;
+}
+
 .equation-card {
   display: grid;
   gap: 22px;
@@ -488,8 +492,40 @@ fieldset {
 }
 
 @media (max-width: 760px) {
+  .app {
+    width: min(100% - 20px, 980px);
+    padding: 14px 0 36px;
+  }
+
+  .hero {
+    margin-bottom: 12px;
+    padding: 18px;
+  }
+
+  h1 {
+    font-size: clamp(2.15rem, 13vw, 3.4rem);
+  }
+
+  .hero p {
+    font-size: 0.98rem;
+  }
+
+  .full-width-info {
+    margin-bottom: 12px;
+  }
+
   .calculator {
     grid-template-columns: 1fr;
+    gap: 12px;
+  }
+
+  .panel {
+    gap: 14px;
+    padding: 16px;
+  }
+
+  fieldset {
+    padding: 12px;
   }
 
   .equation-columns {
@@ -499,6 +535,105 @@ fieldset {
   .simulator-inputs {
     grid-template-columns: 1fr;
   }
+
+  .result-panel {
+    gap: 12px;
+  }
+
+  .mobile-summary {
+    background: var(--green);
+    border-radius: 8px;
+    color: #ffffff;
+    display: grid;
+    gap: 0;
+    padding: 16px;
+  }
+
+  .mobile-summary h2 {
+    font-size: 1.1rem;
+    margin: 0 0 8px;
+  }
+
+  .mobile-summary div {
+    align-items: baseline;
+    border-top: 1px solid rgba(255, 255, 255, 0.22);
+    display: grid;
+    gap: 8px;
+    grid-template-columns: minmax(0, 1fr) auto;
+    padding: 9px 0;
+  }
+
+  .mobile-summary span {
+    color: rgba(255, 255, 255, 0.82);
+    font-weight: 500;
+  }
+
+  .mobile-summary strong {
+    font-size: 1.18rem;
+    font-weight: 600;
+    text-align: right;
+    white-space: nowrap;
+  }
+
+  .mobile-summary .mobile-summary-main {
+    border-bottom: 0;
+    padding-bottom: 0;
+  }
+
+  .mobile-summary .mobile-summary-main strong {
+    font-size: clamp(1.55rem, 8vw, 2.2rem);
+  }
+
+  .equation-card,
+  .small-result,
+  .note {
+    box-shadow: none;
+  }
+
+  .equation-card {
+    gap: 16px;
+    padding: 18px;
+  }
+
+  .equation-card h2 {
+    font-size: 1.22rem;
+  }
+
+  .mpk-info,
+  .pension-info {
+    padding: 10px;
+  }
+
+  .mini-table,
+  .tax-table,
+  .compact-tax-table .tax-table {
+    font-size: 0.72rem;
+  }
+
+  .mini-table td,
+  .tax-table td,
+  .tax-table th {
+    padding: 6px 0;
+  }
+
+  .equation-list div,
+  .equation-list .net-line {
+    align-items: start;
+    gap: 5px;
+    grid-template-columns: 1fr;
+    padding: 11px 0;
+  }
+
+  .equation-list strong,
+  .equation-list .net-line strong {
+    font-size: clamp(1.35rem, 8vw, 2rem);
+    text-align: left;
+    white-space: normal;
+  }
+
+  .equation-list span {
+    font-size: 0.9rem;
+  }
 }
 
 @media (max-width: 460px) {
@@ -506,13 +641,12 @@ fieldset {
     grid-template-columns: 1fr;
   }
 
-  .equation-list div,
-  .equation-list .net-line {
-    grid-template-columns: minmax(0, 1fr) auto;
+  .mobile-summary div {
+    grid-template-columns: 1fr;
   }
 
-  .equation-list strong {
-    font-size: clamp(1.3rem, 7vw, 1.9rem);
+  .mobile-summary strong {
+    text-align: left;
   }
 }
 
