@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cayman-kalkulator</title>
-    <link rel="stylesheet" href="styles.css?v=20260520-2" />
+    <link rel="stylesheet" href="styles.css?v=20260520-3" />
   </head>
   <body>
     <main class="app">
@@ -384,6 +384,7 @@
 
           <article class="equation-card">
             <h2>2. Tilbudet omregnet</h2>
+            <p class="card-lead">Skatt på tilbudet beregnes i denne modellen som 22 % forenklet alminnelig skatt, 7,6 % trygdeavgift og trinnskatt for 2026.</p>
             <div class="equation-list">
               <div>
                 <span>Tilbud i euro</span>
@@ -398,6 +399,14 @@
                 <strong id="offerTax">0 kr</strong>
               </div>
               <div>
+                <span>Herav 22 % alminnelig skatt</span>
+                <strong id="offerCommonTax">0 kr</strong>
+              </div>
+              <div>
+                <span>Herav trygdeavgift 7,6 %</span>
+                <strong id="offerSocialTax">0 kr</strong>
+              </div>
+              <div>
                 <span id="offerBracketTaxLabel">Herav trinnskatt</span>
                 <strong id="offerBracketTax">0 kr</strong>
               </div>
@@ -406,6 +415,7 @@
                 <strong id="offerNetAfterTax">0 kr</strong>
               </div>
             </div>
+            <p class="mini-note" id="offerTaxNote"></p>
           </article>
 
           <article class="equation-card compensation-card">
@@ -523,6 +533,6 @@
       </section>
     </main>
 
-    <script src="app.js?v=20260520-2"></script>
+    <script src="app.js?v=20260520-3"></script>
   </body>
 </html>

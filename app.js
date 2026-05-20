@@ -94,6 +94,7 @@ const output = {
   offerCompareCurrent: document.querySelector("#offerCompareCurrent"),
   offerCompareDifference: document.querySelector("#offerCompareDifference"),
   offerCompareNew: document.querySelector("#offerCompareNew"),
+  offerCommonTax: document.querySelector("#offerCommonTax"),
   offerCurrentNet: document.querySelector("#offerCurrentNet"),
   offerCurrentSalaryNok: document.querySelector("#offerCurrentSalaryNok"),
   offerCurrentTax: document.querySelector("#offerCurrentTax"),
@@ -106,9 +107,11 @@ const output = {
   offerPensionCost: document.querySelector("#offerPensionCost"),
   offerSalaryEurOut: document.querySelector("#offerSalaryEurOut"),
   offerSalaryNok: document.querySelector("#offerSalaryNok"),
+  offerSocialTax: document.querySelector("#offerSocialTax"),
   offerStatusCard: document.querySelector("#offerStatusCard"),
   offerStatusText: document.querySelector("#offerStatusText"),
   offerTax: document.querySelector("#offerTax"),
+  offerTaxNote: document.querySelector("#offerTaxNote"),
 };
 
 const money = new Intl.NumberFormat("nb-NO", {
@@ -361,8 +364,10 @@ function calculateOffer() {
   const currentTax = calculateTotalTax(currentSalary);
   const currentNet = currentSalary - currentTax;
   const offerSalaryNok = offerSalaryEur * offerRate;
-  const offerTax = calculateTotalTax(offerSalaryNok);
+  const offerCommonTax = offerSalaryNok * TAX_RATE_COMMON;
+  const offerSocialTax = offerSalaryNok * SOCIAL_SECURITY_RATE;
   const offerBracketTax = calculateBracketTax(offerSalaryNok);
+  const offerTax = offerCommonTax + offerSocialTax + offerBracketTax;
   const offerNetAfterTax = offerSalaryNok - offerTax;
   const offerNavCost = offerSalaryNok * navRate;
   const currentMpk = calculateMpk(currentSalary).value;
@@ -379,9 +384,13 @@ function calculateOffer() {
   output.offerSalaryEurOut.textContent = euro(offerSalaryEur);
   output.offerSalaryNok.textContent = kroner(offerSalaryNok);
   output.offerTax.textContent = kroner(offerTax);
+  output.offerCommonTax.textContent = kroner(offerCommonTax);
+  output.offerSocialTax.textContent = kroner(offerSocialTax);
   output.offerBracketTaxLabel.textContent = `Herav trinnskatt (${findTaxBracket(offerSalaryNok)})`;
   output.offerBracketTax.textContent = kroner(offerBracketTax);
   output.offerNetAfterTax.textContent = kroner(offerNetAfterTax);
+  output.offerTaxNote.textContent =
+    `${kroner(offerTax)} = ${kroner(offerCommonTax)} i 22 % skatt + ${kroner(offerSocialTax)} i trygdeavgift + ${kroner(offerBracketTax)} i trinnskatt.`;
   output.offerNavCost.textContent = kroner(offerNavCost);
   output.offerMpkCost.textContent = kroner(currentMpk);
   output.offerPensionCost.textContent = kroner(currentPension);
