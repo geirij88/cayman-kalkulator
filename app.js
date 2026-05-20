@@ -100,6 +100,7 @@ const output = {
   offerCompareDifference: document.querySelector("#offerCompareDifference"),
   offerCompareDifferenceLine: document.querySelector("#offerCompareDifferenceLine"),
   offerCompareNew: document.querySelector("#offerCompareNew"),
+  offerCompareRate: document.querySelector("#offerCompareRate"),
   offerCommonTax: document.querySelector("#offerCommonTax"),
   offerCurrentNet: document.querySelector("#offerCurrentNet"),
   offerCurrentSalaryNok: document.querySelector("#offerCurrentSalaryNok"),
@@ -408,6 +409,7 @@ function calculateOffer() {
   output.offerMpkCost.textContent = kroner(currentMpk);
   output.offerPensionCost.textContent = kroner(currentPension);
   output.offerFinalNet.textContent = hasOffer ? kroner(offerFinalNet) : "Skriv inn tilbud";
+  output.offerCompareRate.textContent = offerRate.toLocaleString("nb-NO");
   output.offerCompareCurrent.textContent = kroner(currentNet);
   output.offerCompareNew.textContent = hasOffer ? kroner(offerFinalNet) : "Skriv inn tilbud";
   output.offerDifference.textContent = hasOffer ? kroner(difference) : "Skriv inn tilbud";
