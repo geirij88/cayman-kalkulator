@@ -8,6 +8,8 @@ const DNB_HIGH_RATE = 0.15;
 const MPK_RATE = 0.033;
 const MPK_MAX_G = 12;
 const FREE_DAY_ALLOWANCE_RATE = 177;
+const SEAFARER_DEDUCTION_RATE = 0.30;
+const SEAFARER_DEDUCTION_MAX = 86300;
 
 const TAX_BRACKETS = [
   { from: 226100, to: 318300, rate: 0.017 },
@@ -30,6 +32,7 @@ const fields = {
   offerCurrentSalary: document.querySelector("#offerCurrentSalary"),
   offerNavRate: document.querySelector("#offerNavRate"),
   offerRate: document.querySelector("#offerRate"),
+  offerSeafarerDeduction: document.querySelector("#offerSeafarerDeduction"),
   offerSalaryEur: document.querySelector("#offerSalaryEur"),
 };
 
@@ -51,6 +54,8 @@ const output = {
   breakEvenNetCheck: document.querySelector("#breakEvenNetCheck"),
   breakEvenNok: document.querySelector("#breakEvenNok"),
   breakEvenPensionCost: document.querySelector("#breakEvenPensionCost"),
+  breakEvenSeafarerDeduction: document.querySelector("#breakEvenSeafarerDeduction"),
+  breakEvenSeafarerTaxSaving: document.querySelector("#breakEvenSeafarerTaxSaving"),
   breakEvenSocialTax: document.querySelector("#breakEvenSocialTax"),
   breakEvenTax: document.querySelector("#breakEvenTax"),
   totalTax: document.querySelector("#totalTax"),
@@ -127,6 +132,8 @@ const output = {
   offerNetAfterTax: document.querySelector("#offerNetAfterTax"),
   offerNote: document.querySelector("#offerNote"),
   offerPensionCost: document.querySelector("#offerPensionCost"),
+  offerSeafarerDeductionUsed: document.querySelector("#offerSeafarerDeductionUsed"),
+  offerSeafarerTaxSaving: document.querySelector("#offerSeafarerTaxSaving"),
   offerSalaryEurOut: document.querySelector("#offerSalaryEurOut"),
   offerSalaryNok: document.querySelector("#offerSalaryNok"),
   offerSocialTax: document.querySelector("#offerSocialTax"),
@@ -187,6 +194,30 @@ function calculateTotalTax(income) {
   return income * TAX_RATE_COMMON +
     income * SOCIAL_SECURITY_RATE +
     calculateBracketTax(income);
+}
+
+function calculateSeafarerDeduction(income, enabled) {
+  if (!enabled) return 0;
+  return Math.min(income * SEAFARER_DEDUCTION_RATE, SEAFARER_DEDUCTION_MAX);
+}
+
+function calculateTaxWithSeafarerDeduction(income, enabled) {
+  const seafarerDeduction = calculateSeafarerDeduction(income, enabled);
+  const commonBeforeDeduction = income * TAX_RATE_COMMON;
+  const seafarerTaxSaving = seafarerDeduction * TAX_RATE_COMMON;
+  const common = Math.max(0, commonBeforeDeduction - seafarerTaxSaving);
+  const social = income * SOCIAL_SECURITY_RATE;
+  const bracket = calculateBracketTax(income);
+
+  return {
+    bracket,
+    common,
+    commonBeforeDeduction,
+    seafarerDeduction,
+    seafarerTaxSaving,
+    social,
+    total: common + social + bracket,
+  };
 }
 
 function calculateExtraTaxBreakdown(baseSalary, grossExtra) {
@@ -257,13 +288,16 @@ function calculateGrossUp(baseSalary, targetNetValue) {
   };
 }
 
-function calculateOfferBreakEven(currentSalary, navRate, fixedPensionCost) {
+function calculateOfferBreakEven(currentSalary, navRate, fixedPensionCost, useSeafarerDeduction) {
   const currentNet = currentSalary - calculateTotalTax(currentSalary);
   let low = 0;
   let high = Math.max(currentSalary * 2, fixedPensionCost * 4, 100000);
 
   const netAfterCosts = (grossSalary) =>
-    grossSalary - calculateTotalTax(grossSalary) - (grossSalary * navRate) - fixedPensionCost;
+    grossSalary -
+    calculateTaxWithSeafarerDeduction(grossSalary, useSeafarerDeduction).total -
+    (grossSalary * navRate) -
+    fixedPensionCost;
 
   while (netAfterCosts(high) < currentNet) {
     high *= 1.5;
@@ -400,13 +434,15 @@ function calculateOffer() {
   const offerSalaryEur = Number(fields.offerSalaryEur.value) || 0;
   const offerRate = Number(fields.offerRate.value) || 1;
   const navRate = (Number(fields.offerNavRate.value) || 0) / 100;
+  const useSeafarerDeduction = fields.offerSeafarerDeduction.checked;
   const currentTax = calculateTotalTax(currentSalary);
   const currentNet = currentSalary - currentTax;
   const offerSalaryNok = offerSalaryEur * offerRate;
-  const offerCommonTax = offerSalaryNok * TAX_RATE_COMMON;
-  const offerSocialTax = offerSalaryNok * SOCIAL_SECURITY_RATE;
-  const offerBracketTax = calculateBracketTax(offerSalaryNok);
-  const offerTax = offerCommonTax + offerSocialTax + offerBracketTax;
+  const offerTaxBreakdown = calculateTaxWithSeafarerDeduction(offerSalaryNok, useSeafarerDeduction);
+  const offerCommonTax = offerTaxBreakdown.common;
+  const offerSocialTax = offerTaxBreakdown.social;
+  const offerBracketTax = offerTaxBreakdown.bracket;
+  const offerTax = offerTaxBreakdown.total;
   const offerNetAfterTax = offerSalaryNok - offerTax;
   const offerNavCost = offerSalaryNok * navRate;
   const currentMpk = calculateMpk(currentSalary).value;
@@ -414,12 +450,13 @@ function calculateOffer() {
   const fixedPensionCost = currentMpk + currentPension;
   const offerFinalNet = offerNetAfterTax - offerNavCost - fixedPensionCost;
   const difference = offerFinalNet - currentNet;
-  const breakEvenNok = calculateOfferBreakEven(currentSalary, navRate, fixedPensionCost);
+  const breakEvenNok = calculateOfferBreakEven(currentSalary, navRate, fixedPensionCost, useSeafarerDeduction);
   const breakEvenEur = breakEvenNok / offerRate;
-  const breakEvenCommonTax = breakEvenNok * TAX_RATE_COMMON;
-  const breakEvenSocialTax = breakEvenNok * SOCIAL_SECURITY_RATE;
-  const breakEvenBracketTax = calculateBracketTax(breakEvenNok);
-  const breakEvenTax = calculateTotalTax(breakEvenNok);
+  const breakEvenTaxBreakdown = calculateTaxWithSeafarerDeduction(breakEvenNok, useSeafarerDeduction);
+  const breakEvenCommonTax = breakEvenTaxBreakdown.common;
+  const breakEvenSocialTax = breakEvenTaxBreakdown.social;
+  const breakEvenBracketTax = breakEvenTaxBreakdown.bracket;
+  const breakEvenTax = breakEvenTaxBreakdown.total;
   const breakEvenNavCost = breakEvenNok * navRate;
   const breakEvenNetCheck = breakEvenNok - breakEvenTax - breakEvenNavCost - fixedPensionCost;
   const hasOffer = offerSalaryEur > 0;
@@ -431,12 +468,16 @@ function calculateOffer() {
   output.offerSalaryNok.textContent = kroner(offerSalaryNok);
   output.offerTax.textContent = kroner(offerTax);
   output.offerCommonTax.textContent = kroner(offerCommonTax);
+  output.offerSeafarerDeductionUsed.textContent = kroner(offerTaxBreakdown.seafarerDeduction);
+  output.offerSeafarerTaxSaving.textContent = kroner(offerTaxBreakdown.seafarerTaxSaving);
   output.offerSocialTax.textContent = kroner(offerSocialTax);
   output.offerBracketTaxLabel.textContent = `Herav trinnskatt (${findTaxBracket(offerSalaryNok)})`;
   output.offerBracketTax.textContent = kroner(offerBracketTax);
   output.offerNetAfterTax.textContent = kroner(offerNetAfterTax);
   output.offerTaxNote.textContent =
-    `${kroner(offerTax)} = ${kroner(offerCommonTax)} i 22 % skatt + ${kroner(offerSocialTax)} i trygdeavgift + ${kroner(offerBracketTax)} i trinnskatt.`;
+    useSeafarerDeduction
+      ? `${kroner(offerTax)} = ${kroner(offerTaxBreakdown.commonBeforeDeduction)} i 22 % skatt - ${kroner(offerTaxBreakdown.seafarerTaxSaving)} fra sjømannsfradrag + ${kroner(offerSocialTax)} i trygdeavgift + ${kroner(offerBracketTax)} i trinnskatt.`
+      : `${kroner(offerTax)} = ${kroner(offerCommonTax)} i 22 % skatt + ${kroner(offerSocialTax)} i trygdeavgift + ${kroner(offerBracketTax)} i trinnskatt.`;
   output.offerNavCost.textContent = kroner(offerNavCost);
   output.offerMpkCost.textContent = kroner(currentMpk);
   output.offerPensionCost.textContent = kroner(currentPension);
@@ -459,6 +500,8 @@ function calculateOffer() {
   output.breakEvenNok.textContent = kroner(breakEvenNok);
   output.breakEvenTax.textContent = kroner(breakEvenTax);
   output.breakEvenCommonTax.textContent = kroner(breakEvenCommonTax);
+  output.breakEvenSeafarerDeduction.textContent = kroner(breakEvenTaxBreakdown.seafarerDeduction);
+  output.breakEvenSeafarerTaxSaving.textContent = kroner(breakEvenTaxBreakdown.seafarerTaxSaving);
   output.breakEvenSocialTax.textContent = kroner(breakEvenSocialTax);
   output.breakEvenBracketTaxLabel.textContent = `Herav trinnskatt (${findTaxBracket(breakEvenNok)})`;
   output.breakEvenBracketTax.textContent = kroner(breakEvenBracketTax);
