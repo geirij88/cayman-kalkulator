@@ -146,7 +146,7 @@ fieldset {
   gap: 10px;
 }
 
-.checkbox-card label {
+.checkbox-card .checkbox-line {
   align-items: center;
   cursor: pointer;
   display: flex;

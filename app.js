@@ -369,12 +369,17 @@ function calculateOfferBreakEven(currentSalary, navRate, fixedPensionCost, useSe
   return high;
 }
 
-function setOfferStatus(difference, hasOffer) {
-  output.offerStatusCard.classList.toggle("positive", hasOffer && difference >= 0);
-  output.offerStatusCard.classList.toggle("negative", hasOffer && difference < 0);
+function setOfferStatus(difference, hasOffer, missingTableTax = false) {
+  output.offerStatusCard.classList.toggle("positive", hasOffer && !missingTableTax && difference >= 0);
+  output.offerStatusCard.classList.toggle("negative", hasOffer && !missingTableTax && difference < 0);
 
   if (!hasOffer) {
     output.offerStatusText.textContent = "Skriv inn eurotilbudet for å se om du havner pluss eller minus.";
+    return;
+  }
+
+  if (missingTableTax) {
+    output.offerStatusText.textContent = "Skriv inn tabelltrekk per vanlig måned før tilbudet kan sammenlignes med dagens lønn.";
     return;
   }
 
@@ -495,6 +500,7 @@ function calculateOffer() {
   const useTableTax = fields.offerUseTableTax.checked;
   const monthlyTableTax = Number(fields.offerTableMonthlyTax.value) || 0;
   const tableChoice = selectedTaxTableChoice();
+  const missingTableTax = useTableTax && monthlyTableTax <= 0;
   const currentTax = calculateTotalTax(currentSalary);
   const currentNet = currentSalary - currentTax;
   const offerSalaryNok = offerSalaryEur * offerRate;
@@ -520,30 +526,35 @@ function calculateOffer() {
   const breakEvenNavCost = breakEvenNok * navRate;
   const breakEvenNetCheck = breakEvenNok - breakEvenTax - breakEvenNavCost - fixedPensionCost;
   const hasOffer = offerSalaryEur > 0;
+  const canShowOfferResult = hasOffer && !missingTableTax;
+  const taxText = (value) => missingTableTax ? "Skriv inn trekk" : kroner(value);
+  const breakEvenText = (value) => missingTableTax ? "Skriv inn trekk" : kroner(value);
 
   output.offerCurrentSalaryNok.textContent = kroner(currentSalary);
   output.offerCurrentTax.textContent = kroner(currentTax);
   output.offerCurrentNet.textContent = kroner(currentNet);
   output.offerSalaryEurOut.textContent = euro(offerSalaryEur);
   output.offerSalaryNok.textContent = kroner(offerSalaryNok);
-  output.offerTax.textContent = kroner(offerTax);
+  output.offerTax.textContent = taxText(offerTax);
   output.offerCommonTaxLabel.textContent = useTableTax
     ? "Tabelltrekk per vanlig måned"
     : "Herav 22 % alminnelig skatt etter fradrag";
-  output.offerCommonTax.textContent = kroner(offerCommonTax);
+  output.offerCommonTax.textContent = taxText(offerCommonTax);
   output.offerSeafarerDeductionUsed.textContent = useTableTax ? "Se tabell" : kroner(offerTaxBreakdown.seafarerDeduction);
   output.offerSeafarerTaxSaving.textContent = useTableTax ? "Se tabell" : kroner(offerTaxBreakdown.seafarerTaxSaving);
   output.offerSocialTaxLabel.textContent = useTableTax
     ? `Årsskatt fra tabell (${TABLE_TAX_MONTHS.toLocaleString("nb-NO")} måneder)`
     : "Herav trygdeavgift 7,6 %";
-  output.offerSocialTax.textContent = kroner(offerSocialTax);
+  output.offerSocialTax.textContent = taxText(offerSocialTax);
   output.offerBracketTaxLabel.textContent = useTableTax
     ? "Herav trinnskatt"
     : `Herav trinnskatt (${findTaxBracket(offerSalaryNok)})`;
-  output.offerBracketTax.textContent = kroner(offerBracketTax);
-  output.offerNetAfterTax.textContent = kroner(offerNetAfterTax);
+  output.offerBracketTax.textContent = useTableTax ? "Inngår i tabell" : kroner(offerBracketTax);
+  output.offerNetAfterTax.textContent = canShowOfferResult ? kroner(offerNetAfterTax) : missingTableTax ? "Skriv inn trekk" : "Skriv inn tilbud";
   output.offerTaxNote.textContent =
-    useTableTax
+    missingTableTax
+      ? "Tabellmodus er valgt, men månedstrekket mangler. Skriv inn trekk per vanlig måned fra skattekortet for å bruke tabelltrekk lokalt."
+      : useTableTax
       ? `${kroner(offerTax)} = ${kroner(monthlyTableTax)} tabelltrekk per vanlig måned × ${TABLE_TAX_MONTHS.toLocaleString("nb-NO")} måneder. Dette overstyrer den forenklede 22 % + 7,6 % + trinnskatt-beregningen lokalt.`
       : useSeafarerDeduction
       ? `${kroner(offerTax)} = ${kroner(offerTaxBreakdown.commonBeforeDeduction)} i 22 % skatt - ${kroner(offerTaxBreakdown.seafarerTaxSaving)} fra sjømannsfradrag + ${kroner(offerSocialTax)} i trygdeavgift + ${kroner(offerBracketTax)} i trinnskatt.`
@@ -556,45 +567,45 @@ function calculateOffer() {
   output.offerNavCost.textContent = kroner(offerNavCost);
   output.offerMpkCost.textContent = kroner(currentMpk);
   output.offerPensionCost.textContent = kroner(currentPension);
-  output.offerFinalNet.textContent = hasOffer ? kroner(offerFinalNet) : "Skriv inn tilbud";
+  output.offerFinalNet.textContent = canShowOfferResult ? kroner(offerFinalNet) : missingTableTax ? "Skriv inn trekk" : "Skriv inn tilbud";
   output.offerCompareRate.textContent = rateText(offerRate);
   output.offerCompareCurrent.textContent = kroner(currentNet);
-  output.offerCompareNew.textContent = hasOffer ? kroner(offerFinalNet) : "Skriv inn tilbud";
-  output.offerDifference.textContent = hasOffer ? kroner(difference) : "Skriv inn tilbud";
-  output.offerCompareDifference.textContent = hasOffer ? kroner(difference) : "Skriv inn tilbud";
-  output.offerCompareNew.classList.toggle("positive-value", hasOffer && offerFinalNet >= 0);
-  output.offerCompareNew.classList.toggle("negative-value", hasOffer && offerFinalNet < 0);
-  output.offerCompareDifferenceLine.classList.toggle("positive-line", hasOffer && difference >= 0);
-  output.offerCompareDifferenceLine.classList.toggle("negative-line", hasOffer && difference < 0);
-  output.offerBreakEven.textContent = `${euro(breakEvenEur)} / ${kroner(breakEvenNok)}`;
+  output.offerCompareNew.textContent = canShowOfferResult ? kroner(offerFinalNet) : missingTableTax ? "Skriv inn trekk" : "Skriv inn tilbud";
+  output.offerDifference.textContent = canShowOfferResult ? kroner(difference) : missingTableTax ? "Skriv inn trekk" : "Skriv inn tilbud";
+  output.offerCompareDifference.textContent = canShowOfferResult ? kroner(difference) : missingTableTax ? "Skriv inn trekk" : "Skriv inn tilbud";
+  output.offerCompareNew.classList.toggle("positive-value", canShowOfferResult && offerFinalNet >= 0);
+  output.offerCompareNew.classList.toggle("negative-value", canShowOfferResult && offerFinalNet < 0);
+  output.offerCompareDifferenceLine.classList.toggle("positive-line", canShowOfferResult && difference >= 0);
+  output.offerCompareDifferenceLine.classList.toggle("negative-line", canShowOfferResult && difference < 0);
+  output.offerBreakEven.textContent = missingTableTax ? "Skriv inn trekk" : `${euro(breakEvenEur)} / ${kroner(breakEvenNok)}`;
   output.offerNote.textContent =
     `Nullpunktet er funnet ved å prøve seg frem til en bruttolønn der netto etter skatt, frivillig medlemskap og tapte pensjonsordninger blir lik netto i dag.`;
   output.breakEvenCurrentNet.textContent = kroner(currentNet);
   output.breakEvenFixedCosts.textContent = kroner(fixedPensionCost);
   output.breakEvenNavRate.textContent = `${percent.format(navRate * 100)} %`;
-  output.breakEvenNok.textContent = kroner(breakEvenNok);
-  output.breakEvenTax.textContent = kroner(breakEvenTax);
+  output.breakEvenNok.textContent = breakEvenText(breakEvenNok);
+  output.breakEvenTax.textContent = breakEvenText(breakEvenTax);
   output.breakEvenCommonTaxLabel.textContent = useTableTax
     ? "Tabelltrekk per vanlig måned"
     : "Herav 22 % alminnelig skatt etter fradrag";
-  output.breakEvenCommonTax.textContent = kroner(breakEvenCommonTax);
+  output.breakEvenCommonTax.textContent = breakEvenText(breakEvenCommonTax);
   output.breakEvenSeafarerDeduction.textContent = useTableTax ? "Se tabell" : kroner(breakEvenTaxBreakdown.seafarerDeduction);
   output.breakEvenSeafarerTaxSaving.textContent = useTableTax ? "Se tabell" : kroner(breakEvenTaxBreakdown.seafarerTaxSaving);
   output.breakEvenSocialTaxLabel.textContent = useTableTax
     ? `Årsskatt fra tabell (${TABLE_TAX_MONTHS.toLocaleString("nb-NO")} måneder)`
     : "Herav trygdeavgift 7,6 %";
-  output.breakEvenSocialTax.textContent = kroner(breakEvenSocialTax);
+  output.breakEvenSocialTax.textContent = breakEvenText(breakEvenSocialTax);
   output.breakEvenBracketTaxLabel.textContent = useTableTax
     ? "Herav trinnskatt"
     : `Herav trinnskatt (${findTaxBracket(breakEvenNok)})`;
-  output.breakEvenBracketTax.textContent = kroner(breakEvenBracketTax);
-  output.breakEvenNavCost.textContent = kroner(breakEvenNavCost);
+  output.breakEvenBracketTax.textContent = useTableTax ? "Inngår i tabell" : kroner(breakEvenBracketTax);
+  output.breakEvenNavCost.textContent = breakEvenText(breakEvenNavCost);
   output.breakEvenPensionCost.textContent = kroner(fixedPensionCost);
-  output.breakEvenNetCheck.textContent = kroner(breakEvenNetCheck);
-  output.breakEvenFormula.textContent = `${kroner(breakEvenNok)} / ${rateText(offerRate)}`;
-  output.breakEvenEurDetail.textContent = euro(breakEvenEur);
+  output.breakEvenNetCheck.textContent = breakEvenText(breakEvenNetCheck);
+  output.breakEvenFormula.textContent = missingTableTax ? "Skriv inn trekk" : `${kroner(breakEvenNok)} / ${rateText(offerRate)}`;
+  output.breakEvenEurDetail.textContent = missingTableTax ? "Skriv inn trekk" : euro(breakEvenEur);
 
-  setOfferStatus(difference, hasOffer);
+  setOfferStatus(difference, hasOffer, missingTableTax);
 }
 
 function syncOfferDefaults() {
