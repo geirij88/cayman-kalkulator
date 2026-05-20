@@ -472,7 +472,11 @@ fieldset {
   white-space: nowrap;
 }
 
-.equation-list div:nth-child(2) strong {
+.equation-list .positive-line strong {
+  color: var(--green);
+}
+
+.equation-list .negative-line strong {
   color: #8b3d3b;
 }
 
@@ -491,6 +495,15 @@ fieldset {
 .equation-list .net-line span,
 .equation-list .net-line strong {
   color: var(--green);
+}
+
+.equation-list .net-line.negative-line {
+  border-top-color: #8b3d3b;
+}
+
+.equation-list .net-line.negative-line span,
+.equation-list .net-line.negative-line strong {
+  color: #8b3d3b;
 }
 
 .small-result {

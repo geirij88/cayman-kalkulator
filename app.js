@@ -98,6 +98,7 @@ const output = {
   offerBracketTaxLabel: document.querySelector("#offerBracketTaxLabel"),
   offerCompareCurrent: document.querySelector("#offerCompareCurrent"),
   offerCompareDifference: document.querySelector("#offerCompareDifference"),
+  offerCompareDifferenceLine: document.querySelector("#offerCompareDifferenceLine"),
   offerCompareNew: document.querySelector("#offerCompareNew"),
   offerCommonTax: document.querySelector("#offerCommonTax"),
   offerCurrentNet: document.querySelector("#offerCurrentNet"),
@@ -410,6 +411,8 @@ function calculateOffer() {
   output.offerCompareNew.textContent = kroner(offerFinalNet);
   output.offerDifference.textContent = kroner(difference);
   output.offerCompareDifference.textContent = kroner(difference);
+  output.offerCompareDifferenceLine.classList.toggle("positive-line", difference >= 0);
+  output.offerCompareDifferenceLine.classList.toggle("negative-line", difference < 0);
   output.offerBreakEven.textContent = `${euro(breakEvenEur)} / ${kroner(breakEvenNok)}`;
   output.offerNote.textContent =
     `Ved kurs ${offerRate.toLocaleString("nb-NO")} er nullpunktet omtrent ${euro(breakEvenEur)}. Over dette går du pluss, under dette går du minus i denne forenklede modellen.`;
