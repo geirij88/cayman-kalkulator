@@ -313,6 +313,20 @@ fieldset {
   color: var(--green);
 }
 
+.formula-list .formula-subrow {
+  padding-left: 18px;
+}
+
+.formula-list .formula-subrow span,
+.formula-list .formula-subrow strong {
+  color: var(--red);
+}
+
+.formula-list .formula-check span,
+.formula-list .formula-check strong {
+  color: var(--green);
+}
+
 .compensation-card {
   border-color: #b5d8ca;
 }

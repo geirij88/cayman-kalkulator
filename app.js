@@ -44,7 +44,11 @@ const output = {
   breakEvenFixedCosts: document.querySelector("#breakEvenFixedCosts"),
   breakEvenFormula: document.querySelector("#breakEvenFormula"),
   breakEvenNavRate: document.querySelector("#breakEvenNavRate"),
+  breakEvenNavCost: document.querySelector("#breakEvenNavCost"),
+  breakEvenNetCheck: document.querySelector("#breakEvenNetCheck"),
   breakEvenNok: document.querySelector("#breakEvenNok"),
+  breakEvenPensionCost: document.querySelector("#breakEvenPensionCost"),
+  breakEvenTax: document.querySelector("#breakEvenTax"),
   totalTax: document.querySelector("#totalTax"),
   totalSalaryToday: document.querySelector("#totalSalaryToday"),
   netSalary: document.querySelector("#netSalary"),
@@ -408,6 +412,9 @@ function calculateOffer() {
   const difference = offerFinalNet - currentNet;
   const breakEvenNok = calculateOfferBreakEven(currentSalary, navRate, fixedPensionCost);
   const breakEvenEur = breakEvenNok / offerRate;
+  const breakEvenTax = calculateTotalTax(breakEvenNok);
+  const breakEvenNavCost = breakEvenNok * navRate;
+  const breakEvenNetCheck = breakEvenNok - breakEvenTax - breakEvenNavCost - fixedPensionCost;
   const hasOffer = offerSalaryEur > 0;
 
   output.offerCurrentSalaryNok.textContent = kroner(currentSalary);
@@ -443,6 +450,10 @@ function calculateOffer() {
   output.breakEvenFixedCosts.textContent = kroner(fixedPensionCost);
   output.breakEvenNavRate.textContent = `${percent.format(navRate * 100)} %`;
   output.breakEvenNok.textContent = kroner(breakEvenNok);
+  output.breakEvenTax.textContent = kroner(breakEvenTax);
+  output.breakEvenNavCost.textContent = kroner(breakEvenNavCost);
+  output.breakEvenPensionCost.textContent = kroner(fixedPensionCost);
+  output.breakEvenNetCheck.textContent = kroner(breakEvenNetCheck);
   output.breakEvenFormula.textContent = `${kroner(breakEvenNok)} / ${rateText(offerRate)}`;
   output.breakEvenEurDetail.textContent = euro(breakEvenEur);
 

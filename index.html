@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cayman-kalkulator</title>
-    <link rel="stylesheet" href="styles.css?v=20260520-8" />
+    <link rel="stylesheet" href="styles.css?v=20260520-9" />
   </head>
   <body>
     <main class="app">
@@ -514,11 +514,27 @@
                   <strong id="breakEvenNavRate">0 %</strong>
                 </div>
                 <div>
-                  <span>4. Nødvendig bruttolønn i NOK etter skatt og kostnader</span>
+                  <span>4. Bruttolønn i NOK som gjør at du går i null</span>
                   <strong id="breakEvenNok">0 kr</strong>
                 </div>
+                <div class="formula-subrow">
+                  <span>- Skatt på denne bruttolønnen</span>
+                  <strong id="breakEvenTax">0 kr</strong>
+                </div>
+                <div class="formula-subrow">
+                  <span>- NAV/frivillig medlemskap av denne bruttolønnen</span>
+                  <strong id="breakEvenNavCost">0 kr</strong>
+                </div>
+                <div class="formula-subrow">
+                  <span>- MPK og innskuddspensjon</span>
+                  <strong id="breakEvenPensionCost">0 kr</strong>
+                </div>
+                <div class="formula-check">
+                  <span>= Da sitter du igjen med netto i dag</span>
+                  <strong id="breakEvenNetCheck">0 kr</strong>
+                </div>
                 <div>
-                  <span>5. Delt på EUR/NOK-kurs</span>
+                  <span>5. Bruttolønn delt på EUR/NOK-kurs</span>
                   <strong id="breakEvenFormula">0 kr / 10,78</strong>
                 </div>
                 <div class="formula-total">
@@ -598,6 +614,6 @@
       </section>
     </main>
 
-    <script src="app.js?v=20260520-8"></script>
+    <script src="app.js?v=20260520-9"></script>
   </body>
 </html>
