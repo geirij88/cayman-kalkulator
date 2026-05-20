@@ -42,6 +42,15 @@
             </div>
           </label>
 
+          <label>
+            Fridagskostpenger
+            <div class="money-input">
+              <input id="freeDayCount" type="number" min="0" max="365" step="1" value="180" />
+              <span>dager/år</span>
+            </div>
+          </label>
+          <p class="hint">Fridagskostpenger beregnes som 177 kr per fridag. Standard er 180 fridager per år.</p>
+
           <fieldset>
             <legend>Kostnader som må erstattes</legend>
             <label>
@@ -55,14 +64,6 @@
                 <option value="0">0 % ikke beregnet</option>
               </select>
             </label>
-            <label>
-              Fridagskostpenger
-              <div class="money-input">
-                <input id="freeDayCount" type="number" min="0" max="365" step="1" value="180" />
-                <span>dager/år</span>
-              </div>
-            </label>
-            <p class="hint">Fridagskostpenger beregnes som 177 kr per fridag. Standard er 180 fridager per år.</p>
             <section class="mpk-info">
               <h2>MPK arbeidsgiverandel</h2>
               <p>Arbeidsgiverpremien utgjør 3,3 % av bruttoinntekten om bord. Arbeidstakerpremien er 1,7 %. Premien beregnes hver kalendermåned av maks 12G av årlig bruttoinntekt om bord.</p>
