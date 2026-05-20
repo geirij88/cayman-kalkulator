@@ -476,7 +476,15 @@ fieldset {
   color: var(--green);
 }
 
+.equation-list strong.positive-value {
+  color: var(--green);
+}
+
 .equation-list .negative-line strong {
+  color: #8b3d3b;
+}
+
+.equation-list strong.negative-value {
   color: #8b3d3b;
 }
 

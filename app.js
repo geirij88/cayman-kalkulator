@@ -389,6 +389,7 @@ function calculateOffer() {
   const difference = offerFinalNet - currentNet;
   const breakEvenNok = calculateOfferBreakEven(currentSalary, navRate, fixedPensionCost);
   const breakEvenEur = breakEvenNok / offerRate;
+  const hasOffer = offerSalaryEur > 0;
 
   output.offerCurrentSalaryNok.textContent = kroner(currentSalary);
   output.offerCurrentTax.textContent = kroner(currentTax);
@@ -406,18 +407,20 @@ function calculateOffer() {
   output.offerNavCost.textContent = kroner(offerNavCost);
   output.offerMpkCost.textContent = kroner(currentMpk);
   output.offerPensionCost.textContent = kroner(currentPension);
-  output.offerFinalNet.textContent = kroner(offerFinalNet);
+  output.offerFinalNet.textContent = hasOffer ? kroner(offerFinalNet) : "Skriv inn tilbud";
   output.offerCompareCurrent.textContent = kroner(currentNet);
-  output.offerCompareNew.textContent = kroner(offerFinalNet);
-  output.offerDifference.textContent = kroner(difference);
-  output.offerCompareDifference.textContent = kroner(difference);
-  output.offerCompareDifferenceLine.classList.toggle("positive-line", difference >= 0);
-  output.offerCompareDifferenceLine.classList.toggle("negative-line", difference < 0);
+  output.offerCompareNew.textContent = hasOffer ? kroner(offerFinalNet) : "Skriv inn tilbud";
+  output.offerDifference.textContent = hasOffer ? kroner(difference) : "Skriv inn tilbud";
+  output.offerCompareDifference.textContent = hasOffer ? kroner(difference) : "Skriv inn tilbud";
+  output.offerCompareNew.classList.toggle("positive-value", hasOffer && offerFinalNet >= 0);
+  output.offerCompareNew.classList.toggle("negative-value", hasOffer && offerFinalNet < 0);
+  output.offerCompareDifferenceLine.classList.toggle("positive-line", hasOffer && difference >= 0);
+  output.offerCompareDifferenceLine.classList.toggle("negative-line", hasOffer && difference < 0);
   output.offerBreakEven.textContent = `${euro(breakEvenEur)} / ${kroner(breakEvenNok)}`;
   output.offerNote.textContent =
     `Ved kurs ${offerRate.toLocaleString("nb-NO")} er nullpunktet omtrent ${euro(breakEvenEur)}. Over dette går du pluss, under dette går du minus i denne forenklede modellen.`;
 
-  setOfferStatus(difference, offerSalaryEur > 0);
+  setOfferStatus(difference, hasOffer);
 }
 
 function syncOfferDefaults() {
