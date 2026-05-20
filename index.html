@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cayman-kalkulator</title>
-    <link rel="stylesheet" href="styles.css?v=20260514-7" />
+    <link rel="stylesheet" href="styles.css?v=20260520-1" />
   </head>
   <body>
     <main class="app">
@@ -20,7 +20,12 @@
         <p>Kalkylen holder privatøkonomi utenfor og viser verdien av norsk ansettelse/CBA som kan falle bort ved utflagging. Oppdager dere noen feil si i fra!</p>
       </section>
 
-      <section class="calculator">
+      <nav class="tabs" aria-label="Velg kalkyle">
+        <button class="tab-button active" type="button" data-tab-target="model">Kompensasjonsmodell</button>
+        <button class="tab-button" type="button" data-tab-target="offer">Offer</button>
+      </nav>
+
+      <section class="calculator tab-panel active" id="modelPanel" data-tab-panel="model">
         <form class="panel" id="caymanForm">
           <label>
             Grunnlønn
@@ -282,6 +287,139 @@
         </section>
       </section>
 
+      <section class="calculator offer-calculator tab-panel" id="offerPanel" data-tab-panel="offer" hidden>
+        <form class="panel" id="offerForm">
+          <label>
+            Dagens norske grunnlønn
+            <div class="money-input">
+              <input id="offerCurrentSalary" type="number" min="0" step="10000" value="1000000" />
+              <span>kr/år</span>
+            </div>
+          </label>
+
+          <label>
+            Tilbudt lønn i euro
+            <div class="money-input">
+              <input id="offerSalaryEur" type="number" min="0" step="1000" value="0" />
+              <span>EUR/år</span>
+            </div>
+          </label>
+
+          <label>
+            EUR/NOK-kurs
+            <input id="offerRate" type="number" min="1" step="0.01" value="10.78" />
+          </label>
+
+          <label>
+            Frivillig folketrygd
+            <select id="offerNavRate">
+              <option value="14.1" selected>14,1 % full dekning</option>
+              <option value="13.9">13,9 % helse, sykepenger og pensjon</option>
+              <option value="9.2">9,2 % helse og pensjon</option>
+              <option value="7">7,0 % helse med sykepenger</option>
+              <option value="2.3">2,3 % helsedel</option>
+              <option value="0">0 % ikke beregnet</option>
+            </select>
+          </label>
+
+          <p class="hint">Offer-fanen regner tilbudet motsatt vei: EUR til NOK, minus skatt, minus frivillig medlemskap og minus pensjonsverdier du må erstatte selv.</p>
+        </form>
+
+        <section class="result-panel">
+          <article class="offer-summary-card" id="offerStatusCard">
+            <span>Sluttresultat mot dagens lønn</span>
+            <strong id="offerDifference">0 kr</strong>
+            <p id="offerStatusText">Skriv inn eurotilbudet for å se om du havner pluss eller minus.</p>
+          </article>
+
+          <article class="equation-card primary-equation">
+            <h2>1. Dagens situasjon</h2>
+            <div class="equation-list">
+              <div>
+                <span>Dagens grunnlønn</span>
+                <strong id="offerCurrentSalaryNok">0 kr</strong>
+              </div>
+              <div>
+                <span>Skatt i dag</span>
+                <strong id="offerCurrentTax">0 kr</strong>
+              </div>
+              <div class="net-line">
+                <span>= Netto i dag</span>
+                <strong id="offerCurrentNet">0 kr</strong>
+              </div>
+            </div>
+          </article>
+
+          <article class="equation-card">
+            <h2>2. Tilbudet omregnet</h2>
+            <div class="equation-list">
+              <div>
+                <span>Tilbud i euro</span>
+                <strong id="offerSalaryEurOut">0 EUR</strong>
+              </div>
+              <div>
+                <span>Tilbud i NOK</span>
+                <strong id="offerSalaryNok">0 kr</strong>
+              </div>
+              <div>
+                <span>Skatt på tilbudet</span>
+                <strong id="offerTax">0 kr</strong>
+              </div>
+              <div class="net-line">
+                <span>= Etter skatt</span>
+                <strong id="offerNetAfterTax">0 kr</strong>
+              </div>
+            </div>
+          </article>
+
+          <article class="equation-card compensation-card">
+            <h2>3. Dette må du dekke selv</h2>
+            <p class="card-lead">Dette trekkes fra tilbudet etter skatt for å vise hva du faktisk står igjen med hvis du skal erstatte ordningene selv.</p>
+            <div class="equation-list">
+              <div>
+                <span>Frivillig folketrygd av tilbudslønn</span>
+                <strong id="offerNavCost">0 kr</strong>
+              </div>
+              <div>
+                <span>MPK arbeidsgiverandel du mister</span>
+                <strong id="offerMpkCost">0 kr</strong>
+              </div>
+              <div>
+                <span>Innskuddspensjon du mister</span>
+                <strong id="offerPensionCost">0 kr</strong>
+              </div>
+              <div class="net-line">
+                <span>= Du sitter igjen med</span>
+                <strong id="offerFinalNet">0 kr</strong>
+              </div>
+            </div>
+          </article>
+
+          <article class="equation-card offer-card">
+            <h2>4. Sammenligning</h2>
+            <div class="equation-list">
+              <div>
+                <span>Netto i dag</span>
+                <strong id="offerCompareCurrent">0 kr</strong>
+              </div>
+              <div>
+                <span>Netto etter tilbud og egne kostnader</span>
+                <strong id="offerCompareNew">0 kr</strong>
+              </div>
+              <div class="net-line">
+                <span>= Pluss/minus</span>
+                <strong id="offerCompareDifference">0 kr</strong>
+              </div>
+              <div>
+                <span>Nullpunkt tilbud</span>
+                <strong id="offerBreakEven">0 EUR</strong>
+              </div>
+            </div>
+            <p class="mini-note" id="offerNote">Nullpunkt er estimert tilbud i euro som gjør at du går omtrent i null etter skatt, frivillig medlemskap og tapte pensjonsordninger.</p>
+          </article>
+        </section>
+      </section>
+
       <section class="print-summary">
         <header>
           <p>Forhandlingsmodell</p>
@@ -349,6 +487,6 @@
       </section>
     </main>
 
-    <script src="app.js?v=20260514-7"></script>
+    <script src="app.js?v=20260520-1"></script>
   </body>
 </html>

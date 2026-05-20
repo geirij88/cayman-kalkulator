@@ -263,6 +263,44 @@ fieldset {
   border-color: #b5d8ca;
 }
 
+.offer-card,
+.offer-summary-card {
+  border-color: #b5d8ca;
+}
+
+.offer-summary-card {
+  background: var(--green);
+  border: 1px solid var(--green);
+  border-radius: 8px;
+  box-shadow: 0 18px 50px rgba(20, 32, 29, 0.06);
+  color: #ffffff;
+  display: grid;
+  gap: 8px;
+  padding: 24px;
+}
+
+.offer-summary-card span,
+.offer-summary-card p {
+  color: rgba(255, 255, 255, 0.82);
+  font-weight: 500;
+  margin: 0;
+}
+
+.offer-summary-card strong {
+  font-size: clamp(2.4rem, 7vw, 4.6rem);
+  line-height: 0.95;
+}
+
+.offer-summary-card.negative {
+  background: #8b3d3b;
+  border-color: #8b3d3b;
+}
+
+.offer-summary-card.positive {
+  background: var(--green);
+  border-color: var(--green);
+}
+
 .simulator-inputs {
   display: grid;
   gap: 12px;
@@ -293,6 +331,35 @@ fieldset {
 
 .full-width-info {
   margin-bottom: 18px;
+}
+
+.tabs {
+  display: grid;
+  gap: 10px;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  margin-bottom: 18px;
+}
+
+.tab-button {
+  background: #fbfcfa;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--ink);
+  cursor: pointer;
+  font: inherit;
+  font-weight: 500;
+  min-height: 48px;
+  padding: 10px 14px;
+}
+
+.tab-button.active {
+  background: var(--green);
+  border-color: var(--green);
+  color: #ffffff;
+}
+
+.tab-panel[hidden] {
+  display: none !important;
 }
 
 .mpk-info,
@@ -514,6 +581,16 @@ fieldset {
     margin-bottom: 12px;
   }
 
+  .tabs {
+    gap: 8px;
+    margin-bottom: 12px;
+  }
+
+  .tab-button {
+    min-height: 44px;
+    padding: 9px 10px;
+  }
+
   .calculator {
     grid-template-columns: 1fr;
     gap: 12px;
@@ -586,7 +663,8 @@ fieldset {
 
   .equation-card,
   .small-result,
-  .note {
+  .note,
+  .offer-summary-card {
     box-shadow: none;
   }
 
@@ -597,6 +675,14 @@ fieldset {
 
   .equation-card h2 {
     font-size: 1.22rem;
+  }
+
+  .offer-summary-card {
+    padding: 18px;
+  }
+
+  .offer-summary-card strong {
+    font-size: clamp(2rem, 12vw, 3rem);
   }
 
   .mpk-info,
@@ -675,6 +761,7 @@ fieldset {
 
   .hero,
   .full-width-info,
+  .tabs,
   .calculator {
     display: none !important;
   }

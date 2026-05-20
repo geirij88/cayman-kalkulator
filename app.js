@@ -17,11 +17,18 @@ const TAX_BRACKETS = [
 ];
 
 const form = document.querySelector("#caymanForm");
+const offerForm = document.querySelector("#offerForm");
+const tabButtons = document.querySelectorAll("[data-tab-target]");
+const tabPanels = document.querySelectorAll("[data-tab-panel]");
 const fields = {
   annualSalary: document.querySelector("#annualSalary"),
   eurOffer: document.querySelector("#eurOffer"),
   eurRate: document.querySelector("#eurRate"),
   navRate: document.querySelector("#navRate"),
+  offerCurrentSalary: document.querySelector("#offerCurrentSalary"),
+  offerNavRate: document.querySelector("#offerNavRate"),
+  offerRate: document.querySelector("#offerRate"),
+  offerSalaryEur: document.querySelector("#offerSalaryEur"),
 };
 
 const output = {
@@ -74,6 +81,25 @@ const output = {
   printNetSalary: document.querySelector("#printNetSalary"),
   printPensionCost: document.querySelector("#printPensionCost"),
   printTotalTax: document.querySelector("#printTotalTax"),
+  offerBreakEven: document.querySelector("#offerBreakEven"),
+  offerCompareCurrent: document.querySelector("#offerCompareCurrent"),
+  offerCompareDifference: document.querySelector("#offerCompareDifference"),
+  offerCompareNew: document.querySelector("#offerCompareNew"),
+  offerCurrentNet: document.querySelector("#offerCurrentNet"),
+  offerCurrentSalaryNok: document.querySelector("#offerCurrentSalaryNok"),
+  offerCurrentTax: document.querySelector("#offerCurrentTax"),
+  offerDifference: document.querySelector("#offerDifference"),
+  offerFinalNet: document.querySelector("#offerFinalNet"),
+  offerMpkCost: document.querySelector("#offerMpkCost"),
+  offerNavCost: document.querySelector("#offerNavCost"),
+  offerNetAfterTax: document.querySelector("#offerNetAfterTax"),
+  offerNote: document.querySelector("#offerNote"),
+  offerPensionCost: document.querySelector("#offerPensionCost"),
+  offerSalaryEurOut: document.querySelector("#offerSalaryEurOut"),
+  offerSalaryNok: document.querySelector("#offerSalaryNok"),
+  offerStatusCard: document.querySelector("#offerStatusCard"),
+  offerStatusText: document.querySelector("#offerStatusText"),
+  offerTax: document.querySelector("#offerTax"),
 };
 
 const money = new Intl.NumberFormat("nb-NO", {
@@ -180,6 +206,41 @@ function calculateGrossUp(baseSalary, targetNetValue) {
   };
 }
 
+function calculateOfferBreakEven(currentSalary, navRate, fixedPensionCost) {
+  const currentNet = currentSalary - calculateTotalTax(currentSalary);
+  let low = 0;
+  let high = Math.max(currentSalary * 2, fixedPensionCost * 4, 100000);
+
+  const netAfterCosts = (grossSalary) =>
+    grossSalary - calculateTotalTax(grossSalary) - (grossSalary * navRate) - fixedPensionCost;
+
+  while (netAfterCosts(high) < currentNet) {
+    high *= 1.5;
+  }
+
+  for (let i = 0; i < 80; i += 1) {
+    const middle = (low + high) / 2;
+    if (netAfterCosts(middle) >= currentNet) high = middle;
+    else low = middle;
+  }
+
+  return high;
+}
+
+function setOfferStatus(difference, hasOffer) {
+  output.offerStatusCard.classList.toggle("positive", hasOffer && difference >= 0);
+  output.offerStatusCard.classList.toggle("negative", hasOffer && difference < 0);
+
+  if (!hasOffer) {
+    output.offerStatusText.textContent = "Skriv inn eurotilbudet for å se om du havner pluss eller minus.";
+    return;
+  }
+
+  output.offerStatusText.textContent = difference >= 0
+    ? "Tilbudet ser ut til å dekke dagens netto og de valgte kostnadene."
+    : "Tilbudet dekker ikke dagens netto når skatt, frivillig medlemskap og tapte pensjonsordninger trekkes fra.";
+}
+
 function calculate() {
   const annualSalary = numberValue("annualSalary");
   const eurRate = numberValue("eurRate") || 1;
@@ -264,11 +325,80 @@ function calculate() {
   output.printEquivalentEuroMonth.textContent = euro(equivalentEuroYear / 12);
 }
 
+function calculateOffer() {
+  const currentSalary = Number(fields.offerCurrentSalary.value) || 0;
+  const offerSalaryEur = Number(fields.offerSalaryEur.value) || 0;
+  const offerRate = Number(fields.offerRate.value) || 1;
+  const navRate = (Number(fields.offerNavRate.value) || 0) / 100;
+  const currentTax = calculateTotalTax(currentSalary);
+  const currentNet = currentSalary - currentTax;
+  const offerSalaryNok = offerSalaryEur * offerRate;
+  const offerTax = calculateTotalTax(offerSalaryNok);
+  const offerNetAfterTax = offerSalaryNok - offerTax;
+  const offerNavCost = offerSalaryNok * navRate;
+  const currentMpk = calculateMpk(currentSalary).value;
+  const currentPension = calculateDnbPension(currentSalary).total;
+  const fixedPensionCost = currentMpk + currentPension;
+  const offerFinalNet = offerNetAfterTax - offerNavCost - fixedPensionCost;
+  const difference = offerFinalNet - currentNet;
+  const breakEvenNok = calculateOfferBreakEven(currentSalary, navRate, fixedPensionCost);
+  const breakEvenEur = breakEvenNok / offerRate;
+
+  output.offerCurrentSalaryNok.textContent = kroner(currentSalary);
+  output.offerCurrentTax.textContent = kroner(currentTax);
+  output.offerCurrentNet.textContent = kroner(currentNet);
+  output.offerSalaryEurOut.textContent = euro(offerSalaryEur);
+  output.offerSalaryNok.textContent = kroner(offerSalaryNok);
+  output.offerTax.textContent = kroner(offerTax);
+  output.offerNetAfterTax.textContent = kroner(offerNetAfterTax);
+  output.offerNavCost.textContent = kroner(offerNavCost);
+  output.offerMpkCost.textContent = kroner(currentMpk);
+  output.offerPensionCost.textContent = kroner(currentPension);
+  output.offerFinalNet.textContent = kroner(offerFinalNet);
+  output.offerCompareCurrent.textContent = kroner(currentNet);
+  output.offerCompareNew.textContent = kroner(offerFinalNet);
+  output.offerDifference.textContent = kroner(difference);
+  output.offerCompareDifference.textContent = kroner(difference);
+  output.offerBreakEven.textContent = `${euro(breakEvenEur)} / ${kroner(breakEvenNok)}`;
+  output.offerNote.textContent =
+    `Ved kurs ${offerRate.toLocaleString("nb-NO")} er nullpunktet omtrent ${euro(breakEvenEur)}. Over dette går du pluss, under dette går du minus i denne forenklede modellen.`;
+
+  setOfferStatus(difference, offerSalaryEur > 0);
+}
+
+function syncOfferDefaults() {
+  fields.offerCurrentSalary.value = fields.annualSalary.value;
+  fields.offerRate.value = fields.eurRate.value;
+  fields.offerNavRate.value = fields.navRate.value;
+  calculateOffer();
+}
+
+function switchTab(target) {
+  tabButtons.forEach((button) => {
+    button.classList.toggle("active", button.dataset.tabTarget === target);
+  });
+
+  tabPanels.forEach((panel) => {
+    const isActive = panel.dataset.tabPanel === target;
+    panel.classList.toggle("active", isActive);
+    panel.hidden = !isActive;
+  });
+
+  if (target === "offer") syncOfferDefaults();
+}
+
 form.addEventListener("input", calculate);
 form.addEventListener("change", calculate);
 fields.eurRate.addEventListener("input", calculate);
 fields.eurRate.addEventListener("change", calculate);
 fields.eurOffer.addEventListener("input", calculate);
 fields.eurOffer.addEventListener("change", calculate);
+offerForm.addEventListener("input", calculateOffer);
+offerForm.addEventListener("change", calculateOffer);
+
+tabButtons.forEach((button) => {
+  button.addEventListener("click", () => switchTab(button.dataset.tabTarget));
+});
 
 calculate();
+calculateOffer();
