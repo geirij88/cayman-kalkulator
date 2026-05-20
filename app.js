@@ -12,6 +12,28 @@ const SEAFARER_DEDUCTION_RATE = 0.30;
 const SEAFARER_DEDUCTION_MAX = 86300;
 const TABLE_TAX_MONTHS = 10.5;
 
+const TAX_TABLE_CHOICES = [
+  { code: "", label: "Velg tabell fra Skatteetaten", type: "none", amount: 0 },
+  ...Array.from({ length: 41 }, (_, index) => {
+    const amount = index * 10000;
+    return {
+      amount,
+      code: String(8000 + index * 10),
+      label: `${8000 + index * 10} - fradrag ${amount.toLocaleString("nb-NO")} kr`,
+      type: "deduction",
+    };
+  }),
+  ...Array.from({ length: 40 }, (_, index) => {
+    const amount = (index + 1) * 10000;
+    return {
+      amount,
+      code: String(9010 + index * 10),
+      label: `${9010 + index * 10} - tillegg ${amount.toLocaleString("nb-NO")} kr`,
+      type: "addition",
+    };
+  }),
+];
+
 const TAX_BRACKETS = [
   { from: 226100, to: 318300, rate: 0.017 },
   { from: 318300, to: 725050, rate: 0.04 },
@@ -35,6 +57,7 @@ const fields = {
   offerRate: document.querySelector("#offerRate"),
   offerSeafarerDeduction: document.querySelector("#offerSeafarerDeduction"),
   offerSalaryEur: document.querySelector("#offerSalaryEur"),
+  offerTableCode: document.querySelector("#offerTableCode"),
   offerTableMonthlyTax: document.querySelector("#offerTableMonthlyTax"),
   offerUseTableTax: document.querySelector("#offerUseTableTax"),
 };
@@ -146,6 +169,7 @@ const output = {
   offerSocialTaxLabel: document.querySelector("#offerSocialTaxLabel"),
   offerStatusCard: document.querySelector("#offerStatusCard"),
   offerStatusText: document.querySelector("#offerStatusText"),
+  offerTableInfo: document.querySelector("#offerTableInfo"),
   offerTax: document.querySelector("#offerTax"),
   offerTaxNote: document.querySelector("#offerTaxNote"),
 };
@@ -178,6 +202,16 @@ function euro(amount) {
 
 function rateText(amount) {
   return rateFormat.format(amount);
+}
+
+function populateTaxTableChoices() {
+  fields.offerTableCode.innerHTML = TAX_TABLE_CHOICES.map((choice) =>
+    `<option value="${choice.code}">${choice.label}</option>`
+  ).join("");
+}
+
+function selectedTaxTableChoice() {
+  return TAX_TABLE_CHOICES.find((choice) => choice.code === fields.offerTableCode.value) || TAX_TABLE_CHOICES[0];
 }
 
 function numberValue(field) {
@@ -460,6 +494,7 @@ function calculateOffer() {
   const useSeafarerDeduction = fields.offerSeafarerDeduction.checked;
   const useTableTax = fields.offerUseTableTax.checked;
   const monthlyTableTax = Number(fields.offerTableMonthlyTax.value) || 0;
+  const tableChoice = selectedTaxTableChoice();
   const currentTax = calculateTotalTax(currentSalary);
   const currentNet = currentSalary - currentTax;
   const offerSalaryNok = offerSalaryEur * offerRate;
@@ -513,6 +548,11 @@ function calculateOffer() {
       : useSeafarerDeduction
       ? `${kroner(offerTax)} = ${kroner(offerTaxBreakdown.commonBeforeDeduction)} i 22 % skatt - ${kroner(offerTaxBreakdown.seafarerTaxSaving)} fra sjømannsfradrag + ${kroner(offerSocialTax)} i trygdeavgift + ${kroner(offerBracketTax)} i trinnskatt.`
       : `${kroner(offerTax)} = ${kroner(offerCommonTax)} i 22 % skatt + ${kroner(offerSocialTax)} i trygdeavgift + ${kroner(offerBracketTax)} i trinnskatt.`;
+  output.offerTableInfo.textContent = tableChoice.type === "deduction"
+    ? `Tabell ${tableChoice.code}: Skatteetaten oppgir ${kroner(tableChoice.amount)} i fradrag hensyntatt i tabellen.`
+    : tableChoice.type === "addition"
+      ? `Tabell ${tableChoice.code}: Skatteetaten oppgir ${kroner(tableChoice.amount)} i tillegg hensyntatt i tabellen.`
+      : "Velg tabellnummer for å se hvilket fradrag eller tillegg tabellen bygger på.";
   output.offerNavCost.textContent = kroner(offerNavCost);
   output.offerMpkCost.textContent = kroner(currentMpk);
   output.offerPensionCost.textContent = kroner(currentPension);
@@ -591,5 +631,6 @@ tabButtons.forEach((button) => {
   button.addEventListener("click", () => switchTab(button.dataset.tabTarget));
 });
 
+populateTaxTableChoices();
 calculate();
 calculateOffer();

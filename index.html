@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cayman-kalkulator</title>
-    <link rel="stylesheet" href="styles.css?v=20260520-12" />
+    <link rel="stylesheet" href="styles.css?v=20260520-13" />
   </head>
   <body>
     <main class="app">
@@ -399,11 +399,16 @@
               <input id="offerUseTableTax" type="checkbox" />
               <span>Bruk lokalt tabelltrekk</span>
             </label>
+            <label>
+              Skatteetatens tabellvalg 2026
+              <select id="offerTableCode"></select>
+            </label>
+            <p id="offerTableInfo">Velg tabellnummer for å se hvilket fradrag eller tillegg tabellen bygger på.</p>
             <div class="money-input">
               <input id="offerTableMonthlyTax" type="number" min="0" step="100" value="0" />
               <span>kr/mnd</span>
             </div>
-            <p>Bruk trekket fra skattekortet ditt per vanlig trekkmåned. Årsskatt regnes som månedstrekk × 10,5. Dette er kun lokal test av tilbudet.</p>
+            <p>Bruk trekket fra skattekortet ditt per vanlig trekkmåned. Årsskatt regnes som månedstrekk × 10,5. Tabellvalgene er hentet fra Skatteetatens 2026-oversikt.</p>
           </fieldset>
 
           <p class="hint">Offer-fanen regner tilbudet motsatt vei: EUR til NOK, minus skatt, minus frivillig medlemskap og minus pensjonsverdier du må erstatte selv.</p>
@@ -662,6 +667,6 @@
       </section>
     </main>
 
-    <script src="app.js?v=20260520-12"></script>
+    <script src="app.js?v=20260520-13"></script>
   </body>
 </html>
