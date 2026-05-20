@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cayman-kalkulator</title>
-    <link rel="stylesheet" href="styles.css?v=20260520-15" />
+    <link rel="stylesheet" href="styles.css?v=20260520-16" />
   </head>
   <body>
     <main class="app">
@@ -386,31 +386,6 @@
             </select>
           </label>
 
-          <fieldset class="checkbox-card">
-            <label class="checkbox-line">
-              <input id="offerSeafarerDeduction" type="checkbox" />
-              <span>Beregn sjømannsfradrag på tilbudet</span>
-            </label>
-            <p>30 % av inntekt om bord, maks 86 300 kr i 2026. Fradraget reduserer 22 % alminnelig skatt, ikke trygdeavgift eller trinnskatt. Kilde: <a href="https://www.skatteetaten.no/satser/sjomannsfradrag/" target="_blank" rel="noreferrer">Skatteetaten</a>.</p>
-          </fieldset>
-
-          <fieldset class="checkbox-card">
-            <label class="checkbox-line">
-              <input id="offerUseTableTax" type="checkbox" />
-              <span>Bruk lokalt tabelltrekk</span>
-            </label>
-            <label>
-              Skatteetatens tabellvalg 2026
-              <select id="offerTableCode"></select>
-            </label>
-            <p id="offerTableInfo">Velg tabellnummer for å se hvilket fradrag eller tillegg tabellen bygger på.</p>
-            <div class="money-input">
-              <input id="offerTableMonthlyTax" type="number" min="0" step="100" value="0" />
-              <span>kr/mnd</span>
-            </div>
-            <p>Velg tabell for lokal beregning. Fyll inn månedstrekk hvis du vil overstyre med faktisk trekk fra skattekortet ditt. Da regnes årsskatt som månedstrekk × 10,5.</p>
-          </fieldset>
-
           <p class="hint">Offer-fanen regner tilbudet motsatt vei: EUR til NOK, minus skatt, minus frivillig medlemskap og minus pensjonsverdier du må erstatte selv.</p>
         </form>
 
@@ -456,19 +431,11 @@
                 <strong id="offerTax">0 kr</strong>
               </div>
               <div class="negative-line">
-                <span id="offerCommonTaxLabel">Herav 22 % alminnelig skatt etter fradrag</span>
+                <span>Herav 22 % alminnelig skatt</span>
                 <strong id="offerCommonTax">0 kr</strong>
               </div>
-              <div class="positive-line">
-                <span>Sjømannsfradrag brukt</span>
-                <strong id="offerSeafarerDeductionUsed">0 kr</strong>
-              </div>
-              <div class="positive-line">
-                <span>Skatt spart av sjømannsfradrag</span>
-                <strong id="offerSeafarerTaxSaving">0 kr</strong>
-              </div>
               <div class="negative-line">
-                <span id="offerSocialTaxLabel">Herav trygdeavgift 7,6 %</span>
+                <span>Herav trygdeavgift 7,6 %</span>
                 <strong id="offerSocialTax">0 kr</strong>
               </div>
               <div class="negative-line">
@@ -555,19 +522,11 @@
                   <strong id="breakEvenTax">0 kr</strong>
                 </div>
                 <div class="formula-subdetail">
-                  <span id="breakEvenCommonTaxLabel">Herav 22 % alminnelig skatt etter fradrag</span>
+                  <span>Herav 22 % alminnelig skatt</span>
                   <strong id="breakEvenCommonTax">0 kr</strong>
                 </div>
                 <div class="formula-subdetail">
-                  <span>Sjømannsfradrag brukt</span>
-                  <strong id="breakEvenSeafarerDeduction">0 kr</strong>
-                </div>
-                <div class="formula-subdetail">
-                  <span>Skatt spart av sjømannsfradrag</span>
-                  <strong id="breakEvenSeafarerTaxSaving">0 kr</strong>
-                </div>
-                <div class="formula-subdetail">
-                  <span id="breakEvenSocialTaxLabel">Herav trygdeavgift 7,6 %</span>
+                  <span>Herav trygdeavgift 7,6 %</span>
                   <strong id="breakEvenSocialTax">0 kr</strong>
                 </div>
                 <div class="formula-subdetail">
@@ -667,6 +626,6 @@
       </section>
     </main>
 
-    <script src="app.js?v=20260520-15"></script>
+    <script src="app.js?v=20260520-16"></script>
   </body>
 </html>
