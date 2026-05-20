@@ -493,7 +493,36 @@
                 <strong id="offerBreakEven">0 EUR</strong>
               </div>
             </div>
-            <p class="mini-note" id="offerNote">Nullpunkt er estimert tilbud i euro som gjør at du går omtrent i null etter skatt, frivillig medlemskap og tapte pensjonsordninger.</p>
+            <div class="formula-box">
+              <h3>Hvordan nullpunktet regnes ut</h3>
+              <p id="offerNote">Nullpunkt er estimert tilbud i euro som gjør at du går omtrent i null etter skatt, frivillig medlemskap og tapte pensjonsordninger.</p>
+              <div class="formula-list">
+                <div>
+                  <span>1. Må minst sitte igjen med netto i dag</span>
+                  <strong id="breakEvenCurrentNet">0 kr</strong>
+                </div>
+                <div>
+                  <span>2. Må også dekke MPK og innskuddspensjon</span>
+                  <strong id="breakEvenFixedCosts">0 kr</strong>
+                </div>
+                <div>
+                  <span>3. NAV/frivillig medlemskap beregnes av ny lønn</span>
+                  <strong id="breakEvenNavRate">0 %</strong>
+                </div>
+                <div>
+                  <span>4. Nødvendig bruttolønn i NOK etter skatt og kostnader</span>
+                  <strong id="breakEvenNok">0 kr</strong>
+                </div>
+                <div>
+                  <span>5. Delt på EUR/NOK-kurs</span>
+                  <strong id="breakEvenFormula">0 kr / 0</strong>
+                </div>
+                <div class="formula-total">
+                  <span>= Nullpunkt tilbud i EUR</span>
+                  <strong id="breakEvenEurDetail">0 EUR</strong>
+                </div>
+              </div>
+            </div>
           </article>
         </section>
       </section>

@@ -251,6 +251,68 @@ fieldset {
   padding: 12px;
 }
 
+.formula-box {
+  background: #fbfcfa;
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  display: grid;
+  gap: 10px;
+  padding: 14px;
+}
+
+.formula-box h3 {
+  font-size: 1rem;
+  margin: 0;
+}
+
+.formula-box p {
+  color: var(--muted);
+  font-size: 0.88rem;
+  font-weight: 500;
+  margin: 0;
+}
+
+.formula-list {
+  display: grid;
+}
+
+.formula-list div {
+  align-items: baseline;
+  border-bottom: 1px solid var(--line);
+  display: grid;
+  gap: 12px;
+  grid-template-columns: minmax(0, 1fr) auto;
+  padding: 8px 0;
+}
+
+.formula-list div:last-child {
+  border-bottom: 0;
+}
+
+.formula-list span {
+  color: var(--muted);
+  font-size: 0.84rem;
+  font-weight: 500;
+}
+
+.formula-list strong {
+  color: var(--ink);
+  font-size: 0.95rem;
+  font-weight: 600;
+  text-align: right;
+  white-space: nowrap;
+}
+
+.formula-list .formula-total {
+  border-top: 2px solid var(--green);
+  margin-top: 4px;
+}
+
+.formula-list .formula-total span,
+.formula-list .formula-total strong {
+  color: var(--green);
+}
+
 .compensation-card {
   border-color: #b5d8ca;
 }
@@ -724,7 +786,8 @@ fieldset {
   }
 
   .equation-list div,
-  .equation-list .net-line {
+  .equation-list .net-line,
+  .formula-list div {
     align-items: start;
     gap: 5px;
     grid-template-columns: 1fr;
@@ -732,7 +795,8 @@ fieldset {
   }
 
   .equation-list strong,
-  .equation-list .net-line strong {
+  .equation-list .net-line strong,
+  .formula-list strong {
     font-size: clamp(1.35rem, 8vw, 2rem);
     text-align: left;
     white-space: normal;

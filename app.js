@@ -39,6 +39,12 @@ const output = {
   socialTax: document.querySelector("#socialTax"),
   bracketTax: document.querySelector("#bracketTax"),
   bracketTaxLabel: document.querySelector("#bracketTaxLabel"),
+  breakEvenCurrentNet: document.querySelector("#breakEvenCurrentNet"),
+  breakEvenEurDetail: document.querySelector("#breakEvenEurDetail"),
+  breakEvenFixedCosts: document.querySelector("#breakEvenFixedCosts"),
+  breakEvenFormula: document.querySelector("#breakEvenFormula"),
+  breakEvenNavRate: document.querySelector("#breakEvenNavRate"),
+  breakEvenNok: document.querySelector("#breakEvenNok"),
   totalTax: document.querySelector("#totalTax"),
   totalSalaryToday: document.querySelector("#totalSalaryToday"),
   netSalary: document.querySelector("#netSalary"),
@@ -420,7 +426,13 @@ function calculateOffer() {
   output.offerCompareDifferenceLine.classList.toggle("negative-line", hasOffer && difference < 0);
   output.offerBreakEven.textContent = `${euro(breakEvenEur)} / ${kroner(breakEvenNok)}`;
   output.offerNote.textContent =
-    `Ved kurs ${offerRate.toLocaleString("nb-NO")} er nullpunktet omtrent ${euro(breakEvenEur)}. Over dette går du pluss, under dette går du minus i denne forenklede modellen.`;
+    `Nullpunktet er funnet ved å prøve seg frem til en bruttolønn der netto etter skatt, frivillig medlemskap og tapte pensjonsordninger blir lik netto i dag.`;
+  output.breakEvenCurrentNet.textContent = kroner(currentNet);
+  output.breakEvenFixedCosts.textContent = kroner(fixedPensionCost);
+  output.breakEvenNavRate.textContent = `${percent.format(navRate * 100)} %`;
+  output.breakEvenNok.textContent = kroner(breakEvenNok);
+  output.breakEvenFormula.textContent = `${kroner(breakEvenNok)} / ${offerRate.toLocaleString("nb-NO")}`;
+  output.breakEvenEurDetail.textContent = euro(breakEvenEur);
 
   setOfferStatus(difference, hasOffer);
 }
