@@ -147,16 +147,21 @@
                 </tbody>
               </table>
               <p class="mini-note">Trinnskatt beregnes bare på delen av inntekten som ligger innenfor hvert trinn.</p>
+              <p class="mini-note">Alminnelig skatt beregnes etter standardfradrag: minstefradrag 46 %, maks 95 700 kr, og personfradrag 114 540 kr.</p>
               <p class="mini-note">
                 Kilde:
                 <a href="https://www.skatteetaten.no/satser/trinnskatt/" target="_blank" rel="noopener noreferrer">
                   Skatteetaten - trinnskatt
                 </a>
+                og
+                <a href="https://www.skatteetaten.no/nn/rettskjelder/type/uttalelser/uttalelser/forskuddsutskrivingen-2026/" target="_blank" rel="noopener noreferrer">
+                  Skatteetaten - forskuddsutskrivingen 2026
+                </a>
               </p>
             </section>
           </fieldset>
 
-          <p class="hint">Modellen bruker forenklet 22 % skatt på alminnelig inntekt, 7,6 % trygdeavgift og trinnskatt for 2026.</p>
+          <p class="hint">Modellen bruker 22 % skatt på alminnelig inntekt etter minstefradrag og personfradrag, 7,6 % trygdeavgift og trinnskatt for 2026.</p>
         </form>
 
         <section class="result-panel">
@@ -191,8 +196,16 @@
                 <span>= Total årslønn før skatt</span>
                 <strong id="totalSalaryToday">0 kr</strong>
               </div>
+              <div class="positive-line">
+                <span>- Standardfradrag før 22 % skatt</span>
+                <strong id="standardDeduction">0 kr</strong>
+              </div>
+              <div>
+                <span>= Grunnlag for 22 % skatt</span>
+                <strong id="commonTaxBasis">0 kr</strong>
+              </div>
               <div class="negative-line">
-                <span>Forenklet alminnelig skatt 22 %</span>
+                <span>Alminnelig skatt 22 %</span>
                 <strong id="commonTax">0 kr</strong>
               </div>
               <div class="negative-line">
@@ -273,7 +286,7 @@
                 <strong id="grossUpTax">0 kr</strong>
               </div>
               <div class="negative-line">
-                <span>Herav 22 % alminnelig skatt</span>
+                <span>Herav 22 % alminnelig skatt etter standardfradrag</span>
                 <strong id="grossCommonTax">0 kr</strong>
               </div>
               <div class="negative-line">
@@ -416,7 +429,7 @@
 
           <article class="equation-card">
             <h2>2. Tilbudet omregnet</h2>
-            <p class="card-lead">Skatt på tilbudet beregnes i denne modellen som 22 % forenklet alminnelig skatt, 7,6 % trygdeavgift og trinnskatt for 2026.</p>
+            <p class="card-lead">Skatt på tilbudet beregnes som 22 % alminnelig skatt etter minstefradrag og personfradrag, 7,6 % trygdeavgift og trinnskatt for 2026.</p>
             <div class="equation-list">
               <div class="positive-line">
                 <span>Tilbud i euro</span>
@@ -429,6 +442,14 @@
               <div class="negative-line">
                 <span>Skatt på tilbudet</span>
                 <strong id="offerTax">0 kr</strong>
+              </div>
+              <div class="positive-line">
+                <span>- Standardfradrag før 22 % skatt</span>
+                <strong id="offerStandardDeduction">0 kr</strong>
+              </div>
+              <div>
+                <span>= Grunnlag for 22 % skatt</span>
+                <strong id="offerCommonTaxBasis">0 kr</strong>
               </div>
               <div class="negative-line">
                 <span>Herav 22 % alminnelig skatt</span>
@@ -522,7 +543,7 @@
                   <strong id="breakEvenTax">0 kr</strong>
                 </div>
                 <div class="formula-subdetail">
-                  <span>Herav 22 % alminnelig skatt</span>
+                  <span>Herav 22 % alminnelig skatt etter standardfradrag</span>
                   <strong id="breakEvenCommonTax">0 kr</strong>
                 </div>
                 <div class="formula-subdetail">
@@ -621,7 +642,7 @@
         </div>
 
         <footer>
-          <p>Forutsetninger: 22 % forenklet alminnelig skatt, 7,6 % trygdeavgift, trinnskatt 2026, MPK 3,3 % opp til 12G, innskuddspensjon 3 % til 7,1G og 15 % fra 7,1G til 12G, fridagskostpenger 177 kr per fridag. 1G = 130 160 kr.</p>
+          <p>Forutsetninger: 22 % alminnelig skatt etter minstefradrag/personfradrag, 7,6 % trygdeavgift, trinnskatt 2026, MPK 3,3 % opp til 12G, innskuddspensjon 3 % til 7,1G og 15 % fra 7,1G til 12G, fridagskostpenger 177 kr per fridag. 1G = 130 160 kr.</p>
         </footer>
       </section>
     </main>

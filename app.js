@@ -1,5 +1,8 @@
 const TAX_RATE_COMMON = 0.22;
 const SOCIAL_SECURITY_RATE = 0.076;
+const PERSONAL_ALLOWANCE = 114540;
+const MINIMUM_DEDUCTION_RATE = 0.46;
+const MINIMUM_DEDUCTION_MAX = 95700;
 const G_AMOUNT = 130160;
 const DNB_LOW_LIMIT_G = 7.1;
 const DNB_HIGH_LIMIT_G = 12;
@@ -36,6 +39,8 @@ const fields = {
 const output = {
   baseSalaryToday: document.querySelector("#baseSalaryToday"),
   commonTax: document.querySelector("#commonTax"),
+  commonTaxBasis: document.querySelector("#commonTaxBasis"),
+  standardDeduction: document.querySelector("#standardDeduction"),
   socialTax: document.querySelector("#socialTax"),
   bracketTax: document.querySelector("#bracketTax"),
   bracketTaxLabel: document.querySelector("#bracketTaxLabel"),
@@ -117,6 +122,7 @@ const output = {
   offerCompareNew: document.querySelector("#offerCompareNew"),
   offerCompareRate: document.querySelector("#offerCompareRate"),
   offerCommonTax: document.querySelector("#offerCommonTax"),
+  offerCommonTaxBasis: document.querySelector("#offerCommonTaxBasis"),
   offerCurrentNet: document.querySelector("#offerCurrentNet"),
   offerCurrentSalaryNok: document.querySelector("#offerCurrentSalaryNok"),
   offerCurrentTax: document.querySelector("#offerCurrentTax"),
@@ -132,6 +138,7 @@ const output = {
   offerSocialTax: document.querySelector("#offerSocialTax"),
   offerStatusCard: document.querySelector("#offerStatusCard"),
   offerStatusText: document.querySelector("#offerStatusText"),
+  offerStandardDeduction: document.querySelector("#offerStandardDeduction"),
   offerTax: document.querySelector("#offerTax"),
   offerTaxNote: document.querySelector("#offerTaxNote"),
 };
@@ -177,6 +184,22 @@ function calculateBracketTax(income) {
   }, 0);
 }
 
+function calculateMinimumDeduction(income) {
+  return Math.min(income * MINIMUM_DEDUCTION_RATE, MINIMUM_DEDUCTION_MAX);
+}
+
+function calculateStandardDeduction(income) {
+  return Math.min(income, calculateMinimumDeduction(income) + PERSONAL_ALLOWANCE);
+}
+
+function calculateOrdinaryTaxBasis(income) {
+  return Math.max(0, income - calculateStandardDeduction(income));
+}
+
+function calculateCommonTax(income) {
+  return calculateOrdinaryTaxBasis(income) * TAX_RATE_COMMON;
+}
+
 function findTaxBracket(income) {
   if (income <= TAX_BRACKETS[0].from) return 0;
   const index = TAX_BRACKETS.findIndex((bracket) => income > bracket.from && income <= bracket.to);
@@ -184,7 +207,7 @@ function findTaxBracket(income) {
 }
 
 function calculateTotalTax(income) {
-  return income * TAX_RATE_COMMON +
+  return calculateCommonTax(income) +
     income * SOCIAL_SECURITY_RATE +
     calculateBracketTax(income);
 }
@@ -192,7 +215,7 @@ function calculateTotalTax(income) {
 function calculateExtraTaxBreakdown(baseSalary, grossExtra) {
   return {
     bracket: calculateBracketTax(baseSalary + grossExtra) - calculateBracketTax(baseSalary),
-    common: grossExtra * TAX_RATE_COMMON,
+    common: calculateCommonTax(baseSalary + grossExtra) - calculateCommonTax(baseSalary),
     social: grossExtra * SOCIAL_SECURITY_RATE,
   };
 }
@@ -303,7 +326,9 @@ function calculate() {
   const dnbPension = calculateDnbPension(annualSalary);
   const mpk = calculateMpk(annualSalary);
 
-  const commonTax = currentTotalSalary * TAX_RATE_COMMON;
+  const standardDeduction = calculateStandardDeduction(currentTotalSalary);
+  const commonTaxBasis = calculateOrdinaryTaxBasis(currentTotalSalary);
+  const commonTax = calculateCommonTax(currentTotalSalary);
   const socialTax = currentTotalSalary * SOCIAL_SECURITY_RATE;
   const bracketTax = calculateBracketTax(currentTotalSalary);
   const totalTax = commonTax + socialTax + bracketTax;
@@ -325,6 +350,8 @@ function calculate() {
   output.baseSalaryToday.textContent = kroner(annualSalary);
   output.freeDayIncomeToday.textContent = kroner(freeDayCost);
   output.totalSalaryToday.textContent = kroner(currentTotalSalary);
+  output.standardDeduction.textContent = kroner(standardDeduction);
+  output.commonTaxBasis.textContent = kroner(commonTaxBasis);
   output.commonTax.textContent = kroner(commonTax);
   output.socialTax.textContent = kroner(socialTax);
   output.bracketTaxLabel.textContent = `Trinnskatt (${findTaxBracket(currentTotalSalary)})`;
@@ -403,7 +430,9 @@ function calculateOffer() {
   const currentTax = calculateTotalTax(currentSalary);
   const currentNet = currentSalary - currentTax;
   const offerSalaryNok = offerSalaryEur * offerRate;
-  const offerCommonTax = offerSalaryNok * TAX_RATE_COMMON;
+  const offerStandardDeduction = calculateStandardDeduction(offerSalaryNok);
+  const offerCommonTaxBasis = calculateOrdinaryTaxBasis(offerSalaryNok);
+  const offerCommonTax = calculateCommonTax(offerSalaryNok);
   const offerSocialTax = offerSalaryNok * SOCIAL_SECURITY_RATE;
   const offerBracketTax = calculateBracketTax(offerSalaryNok);
   const offerTax = offerCommonTax + offerSocialTax + offerBracketTax;
@@ -416,7 +445,7 @@ function calculateOffer() {
   const difference = offerFinalNet - currentNet;
   const breakEvenNok = calculateOfferBreakEven(currentSalary, navRate, fixedPensionCost);
   const breakEvenEur = breakEvenNok / offerRate;
-  const breakEvenCommonTax = breakEvenNok * TAX_RATE_COMMON;
+  const breakEvenCommonTax = calculateCommonTax(breakEvenNok);
   const breakEvenSocialTax = breakEvenNok * SOCIAL_SECURITY_RATE;
   const breakEvenBracketTax = calculateBracketTax(breakEvenNok);
   const breakEvenTax = calculateTotalTax(breakEvenNok);
@@ -430,13 +459,15 @@ function calculateOffer() {
   output.offerSalaryEurOut.textContent = euro(offerSalaryEur);
   output.offerSalaryNok.textContent = kroner(offerSalaryNok);
   output.offerTax.textContent = kroner(offerTax);
+  output.offerStandardDeduction.textContent = kroner(offerStandardDeduction);
+  output.offerCommonTaxBasis.textContent = kroner(offerCommonTaxBasis);
   output.offerCommonTax.textContent = kroner(offerCommonTax);
   output.offerSocialTax.textContent = kroner(offerSocialTax);
   output.offerBracketTaxLabel.textContent = `Herav trinnskatt (${findTaxBracket(offerSalaryNok)})`;
   output.offerBracketTax.textContent = kroner(offerBracketTax);
   output.offerNetAfterTax.textContent = kroner(offerNetAfterTax);
   output.offerTaxNote.textContent =
-    `${kroner(offerTax)} = ${kroner(offerCommonTax)} i 22 % skatt + ${kroner(offerSocialTax)} i trygdeavgift + ${kroner(offerBracketTax)} i trinnskatt.`;
+    `${kroner(offerTax)} = ${kroner(offerCommonTax)} i 22 % skatt etter standardfradrag + ${kroner(offerSocialTax)} i trygdeavgift + ${kroner(offerBracketTax)} i trinnskatt. Standardfradraget består av minstefradrag og personfradrag.`;
   output.offerNavCost.textContent = kroner(offerNavCost);
   output.offerMpkCost.textContent = kroner(currentMpk);
   output.offerPensionCost.textContent = kroner(currentPension);
