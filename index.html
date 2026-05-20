@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cayman-kalkulator</title>
-    <link rel="stylesheet" href="styles.css?v=20260520-7" />
+    <link rel="stylesheet" href="styles.css?v=20260520-8" />
   </head>
   <body>
     <main class="app">
@@ -288,6 +288,10 @@
                 <span>= Brutto kompensasjon</span>
                 <strong id="grossCompensation">0 kr</strong>
               </div>
+              <div>
+                <span>Kontroll: brutto komp. - skatt</span>
+                <strong id="grossCheck">0 kr - 0 kr = 0 kr</strong>
+              </div>
               <div class="positive-line">
                 <span>Likeverdig årslønn</span>
                 <strong id="equivalentSalary">0 kr</strong>
@@ -474,7 +478,7 @@
             <div class="equation-list">
               <div>
                 <span>EUR/NOK-kurs brukt</span>
-                <strong id="offerCompareRate">0</strong>
+                <strong id="offerCompareRate">10,78</strong>
               </div>
               <div class="positive-line">
                 <span>Netto i dag</span>
@@ -515,7 +519,7 @@
                 </div>
                 <div>
                   <span>5. Delt på EUR/NOK-kurs</span>
-                  <strong id="breakEvenFormula">0 kr / 0</strong>
+                  <strong id="breakEvenFormula">0 kr / 10,78</strong>
                 </div>
                 <div class="formula-total">
                   <span>= Nullpunkt tilbud i EUR</span>
@@ -594,6 +598,6 @@
       </section>
     </main>
 
-    <script src="app.js?v=20260520-7"></script>
+    <script src="app.js?v=20260520-8"></script>
   </body>
 </html>

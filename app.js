@@ -67,6 +67,7 @@ const output = {
   compBracketTax: document.querySelector("#compBracketTax"),
   compBracketTaxLabel: document.querySelector("#compBracketTaxLabel"),
   grossCompensation: document.querySelector("#grossCompensation"),
+  grossCheck: document.querySelector("#grossCheck"),
   equivalentSalary: document.querySelector("#equivalentSalary"),
   monthlyEquivalentSalary: document.querySelector("#monthlyEquivalentSalary"),
   marginalTax: document.querySelector("#marginalTax"),
@@ -138,6 +139,11 @@ const percent = new Intl.NumberFormat("nb-NO", {
   minimumFractionDigits: 1,
 });
 
+const rateFormat = new Intl.NumberFormat("nb-NO", {
+  maximumFractionDigits: 2,
+  minimumFractionDigits: 2,
+});
+
 function kroner(amount) {
   return money.format(Math.round(amount));
 }
@@ -146,6 +152,10 @@ function euro(amount) {
   return `${new Intl.NumberFormat("nb-NO", {
     maximumFractionDigits: 0,
   }).format(Math.round(amount))} EUR`;
+}
+
+function rateText(amount) {
+  return rateFormat.format(amount);
 }
 
 function numberValue(field) {
@@ -339,6 +349,8 @@ function calculate() {
   output.compBracketTaxLabel.textContent = `Herav trinnskatt (${findTaxBracket(equivalentSalary)})`;
   output.compBracketTax.textContent = kroner(compBracketTax);
   output.grossCompensation.textContent = kroner(grossUp.grossCompensation);
+  output.grossCheck.textContent =
+    `${kroner(grossUp.grossCompensation)} - ${kroner(grossUp.taxOnCompensation)} = ca. ${kroner(directValue)}`;
   output.equivalentSalary.textContent = kroner(equivalentSalary);
   output.mobileEquivalentSalary.textContent = kroner(equivalentSalary);
   output.monthlyEquivalentSalary.textContent = kroner(equivalentSalary / 12);
@@ -357,7 +369,7 @@ function calculate() {
   output.eurOfferNokYear.textContent = eurOffer > 0 ? kroner(eurOfferNokYear) : "Skriv inn EUR";
   output.eurOfferNokMonth.textContent = eurOffer > 0 ? kroner(eurOfferNokYear / 12) : "0 kr";
   output.euroNote.textContent =
-    `Ved kurs ${eurRate.toLocaleString("nb-NO")} tilsvarer likeverdig årslønn ${euro(equivalentEuroYear)}.`;
+    `Ved kurs ${rateText(eurRate)} tilsvarer likeverdig årslønn ${euro(equivalentEuroYear)}.`;
 
   output.printAnnualSalary.textContent = kroner(currentTotalSalary);
   output.printTotalTax.textContent = kroner(totalTax);
@@ -370,7 +382,7 @@ function calculate() {
   output.printGrossCompensation.textContent = kroner(grossUp.grossCompensation);
   output.printEquivalentSalary.textContent = kroner(equivalentSalary);
   output.printMonthlyEquivalentSalary.textContent = kroner(equivalentSalary / 12);
-  output.printEurRate.textContent = eurRate.toLocaleString("nb-NO");
+  output.printEurRate.textContent = rateText(eurRate);
   output.printEquivalentEuroYear.textContent = euro(equivalentEuroYear);
   output.printEquivalentEuroMonth.textContent = euro(equivalentEuroYear / 12);
 }
@@ -415,7 +427,7 @@ function calculateOffer() {
   output.offerMpkCost.textContent = kroner(currentMpk);
   output.offerPensionCost.textContent = kroner(currentPension);
   output.offerFinalNet.textContent = hasOffer ? kroner(offerFinalNet) : "Skriv inn tilbud";
-  output.offerCompareRate.textContent = offerRate.toLocaleString("nb-NO");
+  output.offerCompareRate.textContent = rateText(offerRate);
   output.offerCompareCurrent.textContent = kroner(currentNet);
   output.offerCompareNew.textContent = hasOffer ? kroner(offerFinalNet) : "Skriv inn tilbud";
   output.offerDifference.textContent = hasOffer ? kroner(difference) : "Skriv inn tilbud";
@@ -431,7 +443,7 @@ function calculateOffer() {
   output.breakEvenFixedCosts.textContent = kroner(fixedPensionCost);
   output.breakEvenNavRate.textContent = `${percent.format(navRate * 100)} %`;
   output.breakEvenNok.textContent = kroner(breakEvenNok);
-  output.breakEvenFormula.textContent = `${kroner(breakEvenNok)} / ${offerRate.toLocaleString("nb-NO")}`;
+  output.breakEvenFormula.textContent = `${kroner(breakEvenNok)} / ${rateText(offerRate)}`;
   output.breakEvenEurDetail.textContent = euro(breakEvenEur);
 
   setOfferStatus(difference, hasOffer);
