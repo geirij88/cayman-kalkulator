@@ -34,11 +34,13 @@ const fields = {
 };
 
 const output = {
+  baseSalaryToday: document.querySelector("#baseSalaryToday"),
   commonTax: document.querySelector("#commonTax"),
   socialTax: document.querySelector("#socialTax"),
   bracketTax: document.querySelector("#bracketTax"),
   bracketTaxLabel: document.querySelector("#bracketTaxLabel"),
   totalTax: document.querySelector("#totalTax"),
+  totalSalaryToday: document.querySelector("#totalSalaryToday"),
   netSalary: document.querySelector("#netSalary"),
   navCost: document.querySelector("#navCost"),
   mpkCost: document.querySelector("#mpkCost"),
@@ -51,7 +53,7 @@ const output = {
   pensionHighValue: document.querySelector("#pensionHighValue"),
   pensionTotalPreview: document.querySelector("#pensionTotalPreview"),
   directValue: document.querySelector("#directValue"),
-  freeDayCost: document.querySelector("#freeDayCost"),
+  freeDayIncomeToday: document.querySelector("#freeDayIncomeToday"),
   grossUpBase: document.querySelector("#grossUpBase"),
   grossUpTax: document.querySelector("#grossUpTax"),
   grossCommonTax: document.querySelector("#grossCommonTax"),
@@ -270,32 +272,36 @@ function calculate() {
   const eurOffer = numberValue("eurOffer");
   const freeDayCount = numberValue("freeDayCount");
   const navRate = numberValue("navRate") / 100;
+  const freeDayCost = freeDayCount * FREE_DAY_ALLOWANCE_RATE;
+  const currentTotalSalary = annualSalary + freeDayCost;
   const dnbPension = calculateDnbPension(annualSalary);
   const mpk = calculateMpk(annualSalary);
 
-  const commonTax = annualSalary * TAX_RATE_COMMON;
-  const socialTax = annualSalary * SOCIAL_SECURITY_RATE;
-  const bracketTax = calculateBracketTax(annualSalary);
+  const commonTax = currentTotalSalary * TAX_RATE_COMMON;
+  const socialTax = currentTotalSalary * SOCIAL_SECURITY_RATE;
+  const bracketTax = calculateBracketTax(currentTotalSalary);
   const totalTax = commonTax + socialTax + bracketTax;
-  const netSalary = annualSalary - totalTax;
+  const netSalary = currentTotalSalary - totalTax;
 
   const navCost = annualSalary * navRate;
   const mpkCost = mpk.value;
-  const freeDayCost = freeDayCount * FREE_DAY_ALLOWANCE_RATE;
-  const directValue = navCost + mpkCost + dnbPension.total + freeDayCost;
-  const grossUp = calculateGrossUp(annualSalary, directValue);
-  const navGrossUp = calculateGrossUp(annualSalary, navCost);
-  const equivalentSalary = annualSalary + grossUp.grossCompensation;
-  const grossTaxBreakdown = calculateExtraTaxBreakdown(annualSalary, grossUp.grossCompensation);
-  const navTaxBreakdown = calculateExtraTaxBreakdown(annualSalary, navGrossUp.grossCompensation);
+  const directValue = navCost + mpkCost + dnbPension.total;
+  const grossUp = calculateGrossUp(currentTotalSalary, directValue);
+  const navGrossUp = calculateGrossUp(currentTotalSalary, navCost);
+  const equivalentSalary = currentTotalSalary + grossUp.grossCompensation;
+  const grossTaxBreakdown = calculateExtraTaxBreakdown(currentTotalSalary, grossUp.grossCompensation);
+  const navTaxBreakdown = calculateExtraTaxBreakdown(currentTotalSalary, navGrossUp.grossCompensation);
   const compBracketTax = grossTaxBreakdown.bracket;
   const marginalTaxRate = grossUp.grossCompensation > 0
     ? grossUp.taxOnCompensation / grossUp.grossCompensation
     : 0;
 
+  output.baseSalaryToday.textContent = kroner(annualSalary);
+  output.freeDayIncomeToday.textContent = kroner(freeDayCost);
+  output.totalSalaryToday.textContent = kroner(currentTotalSalary);
   output.commonTax.textContent = kroner(commonTax);
   output.socialTax.textContent = kroner(socialTax);
-  output.bracketTaxLabel.textContent = `Trinnskatt (${findTaxBracket(annualSalary)})`;
+  output.bracketTaxLabel.textContent = `Trinnskatt (${findTaxBracket(currentTotalSalary)})`;
   output.bracketTax.textContent = kroner(bracketTax);
   output.totalTax.textContent = kroner(totalTax);
   output.netSalary.textContent = kroner(netSalary);
@@ -304,7 +310,6 @@ function calculate() {
   output.mpkBasis.textContent = kroner(mpk.basis);
   output.mpkValuePreview.textContent = kroner(mpk.value);
   output.cbaPensionCost.textContent = kroner(dnbPension.total);
-  output.freeDayCost.textContent = kroner(freeDayCost);
   output.pensionLowBasis.textContent = kroner(dnbPension.lowBasis);
   output.pensionHighBasis.textContent = kroner(dnbPension.highBasis);
   output.pensionLowValue.textContent = kroner(dnbPension.lowValue);
@@ -317,7 +322,7 @@ function calculate() {
   output.navGrossNeeded.textContent = kroner(navGrossUp.grossCompensation);
   output.navGrossNote.textContent =
     `${kroner(navCost)} er selve kostnaden. For at du skal sitte igjen med dette etter skatt, må brutto lønn økes med omtrent ${kroner(navGrossUp.grossCompensation)}. Differansen er skatt på kompensasjonen.`;
-  output.mobileAnnualSalary.textContent = kroner(annualSalary);
+  output.mobileAnnualSalary.textContent = kroner(currentTotalSalary);
   output.mobileDirectValue.textContent = kroner(directValue);
   output.grossUpBase.textContent = kroner(directValue);
   output.grossUpTax.textContent = kroner(grossUp.taxOnCompensation);
@@ -331,7 +336,7 @@ function calculate() {
   output.monthlyEquivalentSalary.textContent = kroner(equivalentSalary / 12);
   output.marginalTax.textContent = `${percent.format(marginalTaxRate * 100)} %`;
   output.summaryText.textContent =
-    `Med ${kroner(annualSalary)} i norsk årslønn må ny lønn være omtrent ${kroner(equivalentSalary)} for at ${kroner(directValue)} i tapte ordninger skal være dekket etter skatt.`;
+    `Med ${kroner(currentTotalSalary)} i norsk årslønn inkludert fridagskostpenger må ny lønn være omtrent ${kroner(equivalentSalary)} for at ${kroner(directValue)} i tapte ordninger skal være dekket etter skatt.`;
   output.bracketWarning.hidden = equivalentSalary <= 1467200;
   output.bracketWarning.textContent = equivalentSalary > 1467200
     ? `Ny likeverdig årslønn passerer trinn 5-grensen på ${kroner(1467200)}. Delen over grensen får 17,8 % trinnskatt, og dette er inkludert i gross-up.`
@@ -346,7 +351,7 @@ function calculate() {
   output.euroNote.textContent =
     `Ved kurs ${eurRate.toLocaleString("nb-NO")} tilsvarer likeverdig årslønn ${euro(equivalentEuroYear)}.`;
 
-  output.printAnnualSalary.textContent = kroner(annualSalary);
+  output.printAnnualSalary.textContent = kroner(currentTotalSalary);
   output.printTotalTax.textContent = kroner(totalTax);
   output.printNetSalary.textContent = kroner(netSalary);
   output.printNavCost.textContent = kroner(navCost);
