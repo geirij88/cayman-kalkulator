@@ -51,6 +51,8 @@ const output = {
   directValue: document.querySelector("#directValue"),
   grossUpBase: document.querySelector("#grossUpBase"),
   grossUpTax: document.querySelector("#grossUpTax"),
+  grossCommonTax: document.querySelector("#grossCommonTax"),
+  grossSocialTax: document.querySelector("#grossSocialTax"),
   compBracketTax: document.querySelector("#compBracketTax"),
   compBracketTaxLabel: document.querySelector("#compBracketTaxLabel"),
   grossCompensation: document.querySelector("#grossCompensation"),
@@ -81,7 +83,14 @@ const output = {
   printNetSalary: document.querySelector("#printNetSalary"),
   printPensionCost: document.querySelector("#printPensionCost"),
   printTotalTax: document.querySelector("#printTotalTax"),
+  navDirectCost: document.querySelector("#navDirectCost"),
+  navGrossBracketTax: document.querySelector("#navGrossBracketTax"),
+  navGrossNeeded: document.querySelector("#navGrossNeeded"),
+  navGrossNote: document.querySelector("#navGrossNote"),
+  navGrossTax: document.querySelector("#navGrossTax"),
   offerBreakEven: document.querySelector("#offerBreakEven"),
+  offerBracketTax: document.querySelector("#offerBracketTax"),
+  offerBracketTaxLabel: document.querySelector("#offerBracketTaxLabel"),
   offerCompareCurrent: document.querySelector("#offerCompareCurrent"),
   offerCompareDifference: document.querySelector("#offerCompareDifference"),
   offerCompareNew: document.querySelector("#offerCompareNew"),
@@ -144,6 +153,14 @@ function calculateTotalTax(income) {
   return income * TAX_RATE_COMMON +
     income * SOCIAL_SECURITY_RATE +
     calculateBracketTax(income);
+}
+
+function calculateExtraTaxBreakdown(baseSalary, grossExtra) {
+  return {
+    bracket: calculateBracketTax(baseSalary + grossExtra) - calculateBracketTax(baseSalary),
+    common: grossExtra * TAX_RATE_COMMON,
+    social: grossExtra * SOCIAL_SECURITY_RATE,
+  };
 }
 
 function calculateDnbPension(income) {
@@ -259,8 +276,11 @@ function calculate() {
   const mpkCost = mpk.value;
   const directValue = navCost + mpkCost + dnbPension.total;
   const grossUp = calculateGrossUp(annualSalary, directValue);
+  const navGrossUp = calculateGrossUp(annualSalary, navCost);
   const equivalentSalary = annualSalary + grossUp.grossCompensation;
-  const compBracketTax = calculateBracketTax(equivalentSalary) - bracketTax;
+  const grossTaxBreakdown = calculateExtraTaxBreakdown(annualSalary, grossUp.grossCompensation);
+  const navTaxBreakdown = calculateExtraTaxBreakdown(annualSalary, navGrossUp.grossCompensation);
+  const compBracketTax = grossTaxBreakdown.bracket;
   const marginalTaxRate = grossUp.grossCompensation > 0
     ? grossUp.taxOnCompensation / grossUp.grossCompensation
     : 0;
@@ -282,10 +302,18 @@ function calculate() {
   output.pensionHighValue.textContent = kroner(dnbPension.highValue);
   output.pensionTotalPreview.textContent = kroner(dnbPension.total);
   output.directValue.textContent = kroner(directValue);
+  output.navDirectCost.textContent = kroner(navCost);
+  output.navGrossTax.textContent = kroner(navGrossUp.taxOnCompensation);
+  output.navGrossBracketTax.textContent = kroner(navTaxBreakdown.bracket);
+  output.navGrossNeeded.textContent = kroner(navGrossUp.grossCompensation);
+  output.navGrossNote.textContent =
+    `${kroner(navCost)} er selve kostnaden. For at du skal sitte igjen med dette etter skatt, må brutto lønn økes med omtrent ${kroner(navGrossUp.grossCompensation)}. Differansen er skatt på kompensasjonen.`;
   output.mobileAnnualSalary.textContent = kroner(annualSalary);
   output.mobileDirectValue.textContent = kroner(directValue);
   output.grossUpBase.textContent = kroner(directValue);
   output.grossUpTax.textContent = kroner(grossUp.taxOnCompensation);
+  output.grossCommonTax.textContent = kroner(grossTaxBreakdown.common);
+  output.grossSocialTax.textContent = kroner(grossTaxBreakdown.social);
   output.compBracketTaxLabel.textContent = `Herav trinnskatt (${findTaxBracket(equivalentSalary)})`;
   output.compBracketTax.textContent = kroner(compBracketTax);
   output.grossCompensation.textContent = kroner(grossUp.grossCompensation);
@@ -334,6 +362,7 @@ function calculateOffer() {
   const currentNet = currentSalary - currentTax;
   const offerSalaryNok = offerSalaryEur * offerRate;
   const offerTax = calculateTotalTax(offerSalaryNok);
+  const offerBracketTax = calculateBracketTax(offerSalaryNok);
   const offerNetAfterTax = offerSalaryNok - offerTax;
   const offerNavCost = offerSalaryNok * navRate;
   const currentMpk = calculateMpk(currentSalary).value;
@@ -350,6 +379,8 @@ function calculateOffer() {
   output.offerSalaryEurOut.textContent = euro(offerSalaryEur);
   output.offerSalaryNok.textContent = kroner(offerSalaryNok);
   output.offerTax.textContent = kroner(offerTax);
+  output.offerBracketTaxLabel.textContent = `Herav trinnskatt (${findTaxBracket(offerSalaryNok)})`;
+  output.offerBracketTax.textContent = kroner(offerBracketTax);
   output.offerNetAfterTax.textContent = kroner(offerNetAfterTax);
   output.offerNavCost.textContent = kroner(offerNavCost);
   output.offerMpkCost.textContent = kroner(currentMpk);

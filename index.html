@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cayman-kalkulator</title>
-    <link rel="stylesheet" href="styles.css?v=20260520-1" />
+    <link rel="stylesheet" href="styles.css?v=20260520-2" />
   </head>
   <body>
     <main class="app">
@@ -208,8 +208,32 @@
             </div>
           </article>
 
+          <article class="equation-card">
+            <h2>3. Frivillig folketrygd blir skattbar lønn</h2>
+            <p class="card-lead">Hvis arbeidsgiver legger arbeidsgiverdelen på lønnen din, må du også skatte av den kompensasjonen. Derfor må beløpet grosses opp.</p>
+            <div class="equation-list">
+              <div>
+                <span>Frivillig folketrygd / arbeidsgiverdel i kroner</span>
+                <strong id="navDirectCost">0 kr</strong>
+              </div>
+              <div>
+                <span>Skatt som utløses på denne kompensasjonen</span>
+                <strong id="navGrossTax">0 kr</strong>
+              </div>
+              <div>
+                <span>Herav trinnskatt</span>
+                <strong id="navGrossBracketTax">0 kr</strong>
+              </div>
+              <div class="net-line">
+                <span>= Brutto kompensasjon for at posten går i null</span>
+                <strong id="navGrossNeeded">0 kr</strong>
+              </div>
+            </div>
+            <p class="mini-note" id="navGrossNote"></p>
+          </article>
+
           <article class="equation-card compensation-card">
-            <h2>3. Gross-up kompensasjon</h2>
+            <h2>4. Gross-up kompensasjon</h2>
             <p class="card-lead">Ekstra lønn skattlegges også. Derfor må brutto kompensasjon være høyere enn verdien som faktisk skal dekkes.</p>
             <div class="equation-list">
               <div>
@@ -219,6 +243,14 @@
               <div>
                 <span>Skatt på ekstra lønn</span>
                 <strong id="grossUpTax">0 kr</strong>
+              </div>
+              <div>
+                <span>Herav 22 % alminnelig skatt</span>
+                <strong id="grossCommonTax">0 kr</strong>
+              </div>
+              <div>
+                <span>Herav trygdeavgift 7,6 %</span>
+                <strong id="grossSocialTax">0 kr</strong>
               </div>
               <div>
                 <span id="compBracketTaxLabel">Herav trinnskatt</span>
@@ -246,7 +278,7 @@
           </article>
 
           <article class="equation-card euro-card">
-            <h2>4. EURO Simulator</h2>
+            <h2>5. EURO Simulator</h2>
             <p class="card-lead">Test hva den likeverdige lønnen blir i euro, og hva et euro-tilbud blir verdt i norske kroner når EUR/NOK endrer seg.</p>
 
             <div class="simulator-inputs">
@@ -365,6 +397,10 @@
                 <span>Skatt på tilbudet</span>
                 <strong id="offerTax">0 kr</strong>
               </div>
+              <div>
+                <span id="offerBracketTaxLabel">Herav trinnskatt</span>
+                <strong id="offerBracketTax">0 kr</strong>
+              </div>
               <div class="net-line">
                 <span>= Etter skatt</span>
                 <strong id="offerNetAfterTax">0 kr</strong>
@@ -377,7 +413,7 @@
             <p class="card-lead">Dette trekkes fra tilbudet etter skatt for å vise hva du faktisk står igjen med hvis du skal erstatte ordningene selv.</p>
             <div class="equation-list">
               <div>
-                <span>Frivillig folketrygd av tilbudslønn</span>
+                <span>Frivillig folketrygd av tilbudslønn / arbeidsgiverdel</span>
                 <strong id="offerNavCost">0 kr</strong>
               </div>
               <div>
@@ -487,6 +523,6 @@
       </section>
     </main>
 
-    <script src="app.js?v=20260520-1"></script>
+    <script src="app.js?v=20260520-2"></script>
   </body>
 </html>
