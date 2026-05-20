@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cayman-kalkulator</title>
-    <link rel="stylesheet" href="styles.css?v=20260520-9" />
+    <link rel="stylesheet" href="styles.css?v=20260520-10" />
   </head>
   <body>
     <main class="app">
@@ -521,6 +521,18 @@
                   <span>- Skatt på denne bruttolønnen</span>
                   <strong id="breakEvenTax">0 kr</strong>
                 </div>
+                <div class="formula-subdetail">
+                  <span>Herav 22 % alminnelig skatt</span>
+                  <strong id="breakEvenCommonTax">0 kr</strong>
+                </div>
+                <div class="formula-subdetail">
+                  <span>Herav trygdeavgift 7,6 %</span>
+                  <strong id="breakEvenSocialTax">0 kr</strong>
+                </div>
+                <div class="formula-subdetail">
+                  <span id="breakEvenBracketTaxLabel">Herav trinnskatt</span>
+                  <strong id="breakEvenBracketTax">0 kr</strong>
+                </div>
                 <div class="formula-subrow">
                   <span>- NAV/frivillig medlemskap av denne bruttolønnen</span>
                   <strong id="breakEvenNavCost">0 kr</strong>
@@ -614,6 +626,6 @@
       </section>
     </main>
 
-    <script src="app.js?v=20260520-9"></script>
+    <script src="app.js?v=20260520-10"></script>
   </body>
 </html>

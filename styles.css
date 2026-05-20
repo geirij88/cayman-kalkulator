@@ -322,6 +322,16 @@ fieldset {
   color: var(--red);
 }
 
+.formula-list .formula-subdetail {
+  padding-left: 38px;
+}
+
+.formula-list .formula-subdetail span,
+.formula-list .formula-subdetail strong {
+  color: var(--muted);
+  font-size: 0.78rem;
+}
+
 .formula-list .formula-check span,
 .formula-list .formula-check strong {
   color: var(--green);

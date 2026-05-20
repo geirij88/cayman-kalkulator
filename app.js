@@ -43,11 +43,15 @@ const output = {
   breakEvenEurDetail: document.querySelector("#breakEvenEurDetail"),
   breakEvenFixedCosts: document.querySelector("#breakEvenFixedCosts"),
   breakEvenFormula: document.querySelector("#breakEvenFormula"),
+  breakEvenBracketTax: document.querySelector("#breakEvenBracketTax"),
+  breakEvenBracketTaxLabel: document.querySelector("#breakEvenBracketTaxLabel"),
+  breakEvenCommonTax: document.querySelector("#breakEvenCommonTax"),
   breakEvenNavRate: document.querySelector("#breakEvenNavRate"),
   breakEvenNavCost: document.querySelector("#breakEvenNavCost"),
   breakEvenNetCheck: document.querySelector("#breakEvenNetCheck"),
   breakEvenNok: document.querySelector("#breakEvenNok"),
   breakEvenPensionCost: document.querySelector("#breakEvenPensionCost"),
+  breakEvenSocialTax: document.querySelector("#breakEvenSocialTax"),
   breakEvenTax: document.querySelector("#breakEvenTax"),
   totalTax: document.querySelector("#totalTax"),
   totalSalaryToday: document.querySelector("#totalSalaryToday"),
@@ -412,6 +416,9 @@ function calculateOffer() {
   const difference = offerFinalNet - currentNet;
   const breakEvenNok = calculateOfferBreakEven(currentSalary, navRate, fixedPensionCost);
   const breakEvenEur = breakEvenNok / offerRate;
+  const breakEvenCommonTax = breakEvenNok * TAX_RATE_COMMON;
+  const breakEvenSocialTax = breakEvenNok * SOCIAL_SECURITY_RATE;
+  const breakEvenBracketTax = calculateBracketTax(breakEvenNok);
   const breakEvenTax = calculateTotalTax(breakEvenNok);
   const breakEvenNavCost = breakEvenNok * navRate;
   const breakEvenNetCheck = breakEvenNok - breakEvenTax - breakEvenNavCost - fixedPensionCost;
@@ -451,6 +458,10 @@ function calculateOffer() {
   output.breakEvenNavRate.textContent = `${percent.format(navRate * 100)} %`;
   output.breakEvenNok.textContent = kroner(breakEvenNok);
   output.breakEvenTax.textContent = kroner(breakEvenTax);
+  output.breakEvenCommonTax.textContent = kroner(breakEvenCommonTax);
+  output.breakEvenSocialTax.textContent = kroner(breakEvenSocialTax);
+  output.breakEvenBracketTaxLabel.textContent = `Herav trinnskatt (${findTaxBracket(breakEvenNok)})`;
+  output.breakEvenBracketTax.textContent = kroner(breakEvenBracketTax);
   output.breakEvenNavCost.textContent = kroner(breakEvenNavCost);
   output.breakEvenPensionCost.textContent = kroner(fixedPensionCost);
   output.breakEvenNetCheck.textContent = kroner(breakEvenNetCheck);
