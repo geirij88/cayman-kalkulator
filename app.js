@@ -7,6 +7,7 @@ const DNB_LOW_RATE = 0.03;
 const DNB_HIGH_RATE = 0.15;
 const MPK_RATE = 0.033;
 const MPK_MAX_G = 12;
+const FREE_DAY_ALLOWANCE_RATE = 177;
 
 const TAX_BRACKETS = [
   { from: 226100, to: 318300, rate: 0.017 },
@@ -24,6 +25,7 @@ const fields = {
   annualSalary: document.querySelector("#annualSalary"),
   eurOffer: document.querySelector("#eurOffer"),
   eurRate: document.querySelector("#eurRate"),
+  freeDayCount: document.querySelector("#freeDayCount"),
   navRate: document.querySelector("#navRate"),
   offerCurrentSalary: document.querySelector("#offerCurrentSalary"),
   offerNavRate: document.querySelector("#offerNavRate"),
@@ -49,6 +51,7 @@ const output = {
   pensionHighValue: document.querySelector("#pensionHighValue"),
   pensionTotalPreview: document.querySelector("#pensionTotalPreview"),
   directValue: document.querySelector("#directValue"),
+  freeDayCost: document.querySelector("#freeDayCost"),
   grossUpBase: document.querySelector("#grossUpBase"),
   grossUpTax: document.querySelector("#grossUpTax"),
   grossCommonTax: document.querySelector("#grossCommonTax"),
@@ -265,6 +268,7 @@ function calculate() {
   const annualSalary = numberValue("annualSalary");
   const eurRate = numberValue("eurRate") || 1;
   const eurOffer = numberValue("eurOffer");
+  const freeDayCount = numberValue("freeDayCount");
   const navRate = numberValue("navRate") / 100;
   const dnbPension = calculateDnbPension(annualSalary);
   const mpk = calculateMpk(annualSalary);
@@ -277,7 +281,8 @@ function calculate() {
 
   const navCost = annualSalary * navRate;
   const mpkCost = mpk.value;
-  const directValue = navCost + mpkCost + dnbPension.total;
+  const freeDayCost = freeDayCount * FREE_DAY_ALLOWANCE_RATE;
+  const directValue = navCost + mpkCost + dnbPension.total + freeDayCost;
   const grossUp = calculateGrossUp(annualSalary, directValue);
   const navGrossUp = calculateGrossUp(annualSalary, navCost);
   const equivalentSalary = annualSalary + grossUp.grossCompensation;
@@ -299,6 +304,7 @@ function calculate() {
   output.mpkBasis.textContent = kroner(mpk.basis);
   output.mpkValuePreview.textContent = kroner(mpk.value);
   output.cbaPensionCost.textContent = kroner(dnbPension.total);
+  output.freeDayCost.textContent = kroner(freeDayCost);
   output.pensionLowBasis.textContent = kroner(dnbPension.lowBasis);
   output.pensionHighBasis.textContent = kroner(dnbPension.highBasis);
   output.pensionLowValue.textContent = kroner(dnbPension.lowValue);

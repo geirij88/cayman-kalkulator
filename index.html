@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cayman-kalkulator</title>
-    <link rel="stylesheet" href="styles.css?v=20260520-4" />
+    <link rel="stylesheet" href="styles.css?v=20260520-5" />
   </head>
   <body>
     <main class="app">
@@ -55,6 +55,14 @@
                 <option value="0">0 % ikke beregnet</option>
               </select>
             </label>
+            <label>
+              Fridagskostpenger
+              <div class="money-input">
+                <input id="freeDayCount" type="number" min="0" max="365" step="1" value="180" />
+                <span>dager/år</span>
+              </div>
+            </label>
+            <p class="hint">Fridagskostpenger beregnes som 177 kr per fridag. Standard er 180 fridager per år.</p>
             <section class="mpk-info">
               <h2>MPK arbeidsgiverandel</h2>
               <p>Arbeidsgiverpremien utgjør 3,3 % av bruttoinntekten om bord. Arbeidstakerpremien er 1,7 %. Premien beregnes hver kalendermåned av maks 12G av årlig bruttoinntekt om bord.</p>
@@ -207,6 +215,10 @@
               <div>
                 <span>Innskuddspensjon</span>
                 <strong id="cbaPensionCost">0 kr</strong>
+              </div>
+              <div>
+                <span>Fridagskostpenger</span>
+                <strong id="freeDayCost">0 kr</strong>
               </div>
               <div class="net-line">
                 <span>= Samlet verdi</span>
@@ -535,11 +547,11 @@
         </div>
 
         <footer>
-          <p>Forutsetninger: 22 % forenklet alminnelig skatt, 7,6 % trygdeavgift, trinnskatt 2026, MPK 3,3 % opp til 12G, innskuddspensjon 3 % til 7,1G og 15 % fra 7,1G til 12G. 1G = 130 160 kr.</p>
+          <p>Forutsetninger: 22 % forenklet alminnelig skatt, 7,6 % trygdeavgift, trinnskatt 2026, MPK 3,3 % opp til 12G, innskuddspensjon 3 % til 7,1G og 15 % fra 7,1G til 12G, fridagskostpenger 177 kr per fridag. 1G = 130 160 kr.</p>
         </footer>
       </section>
     </main>
 
-    <script src="app.js?v=20260520-4"></script>
+    <script src="app.js?v=20260520-5"></script>
   </body>
 </html>
