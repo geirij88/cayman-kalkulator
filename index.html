@@ -4,7 +4,7 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <title>Cayman-kalkulator</title>
-    <link rel="stylesheet" href="styles.css?v=20260520-16" />
+    <link rel="stylesheet" href="styles.css?v=20260522-5" />
   </head>
   <body>
     <main class="app">
@@ -29,6 +29,7 @@
 
       <nav class="tabs" aria-label="Velg kalkyle">
         <button class="tab-button active" type="button" data-tab-target="model">Kompensasjonsmodell</button>
+        <button class="tab-button" type="button" data-tab-target="report">Generer rapport</button>
         <button class="tab-button" type="button" data-tab-target="offer">Tilbud ny kontrakt</button>
       </nav>
 
@@ -50,6 +51,12 @@
             </div>
           </label>
           <p class="hint">Fridagskostpenger beregnes som 177 kr per fridag. Standard er 180 fridager per år.</p>
+
+          <label class="choice option-card">
+            <input id="safetyRepresentative" type="checkbox" />
+            <span>Verneombuds kompensasjon</span>
+            <strong>+ 776 kr/mnd</strong>
+          </label>
 
           <fieldset>
             <legend>Kostnader som må erstattes</legend>
@@ -81,7 +88,7 @@
             <section class="pension-info">
               <h2>Innskuddspensjon</h2>
               <p>Pensjon i DnB</p>
-              <p>Innskuddsplanen er 3 % fra 0 til 7,1G og 15 % fra 7,1 til 12G. 1G er 130 160 kr, siste publiserte NAV-sats per 1. mai 2025.</p>
+              <p>Innskuddsplanen er 3 % fra 0 til 7,1G og 15 % fra 7,1 til 12G. 1G er 136 549 kr, publisert NAV-sats per 1. mai 2026.</p>
               <table class="mini-table">
                 <tbody>
                   <tr>
@@ -193,6 +200,10 @@
                 <strong id="freeDayIncomeToday">0 kr</strong>
               </div>
               <div class="positive-line">
+                <span>+ Verneombuds kompensasjon</span>
+                <strong id="safetyRepresentativeIncomeToday">0 kr</strong>
+              </div>
+              <div class="positive-line">
                 <span>= Total årslønn før skatt</span>
                 <strong id="totalSalaryToday">0 kr</strong>
               </div>
@@ -231,7 +242,7 @@
             <h2>2. Dette må arbeidsgiver erstatte</h2>
             <div class="equation-list">
               <div class="negative-line">
-                <span>Frivillig folketrygd</span>
+                <span>Frivillig folketrygd av grunnlønn</span>
                 <strong id="navCost">0 kr</strong>
               </div>
               <div class="negative-line">
@@ -254,7 +265,7 @@
             <p class="card-lead">Hvis arbeidsgiver legger arbeidsgiverdelen på lønnen din, må du også skatte av den kompensasjonen. Derfor må beløpet grosses opp.</p>
             <div class="equation-list">
               <div class="negative-line">
-                <span>Frivillig folketrygd / arbeidsgiverdel i kroner</span>
+                <span>Frivillig folketrygd / arbeidsgiverdel av grunnlønn</span>
                 <strong id="navDirectCost">0 kr</strong>
               </div>
               <div class="negative-line">
@@ -364,10 +375,37 @@
         </section>
       </section>
 
+      <section class="report-panel tab-panel" id="reportPanel" data-tab-panel="report" hidden>
+        <article class="report-card">
+          <div class="report-heading">
+            <p class="eyebrow" id="reportEyebrow">Rapport basert på kompensasjonsmodellen</p>
+            <h2 id="reportTitle">Arbeidsgiverkostnader ved overgang til ny kontrakt</h2>
+            <p id="reportIntro">Rapporten forklarer tallene steg for steg, med samme satser og input som ligger i kalkulatoren.</p>
+          </div>
+          <div class="report-actions">
+            <button class="secondary-button" id="saveReportPdf" type="button">Lagre som PDF</button>
+            <p>Når utskriftsvinduet åpnes, velg “Lagre som PDF”.</p>
+          </div>
+          <div class="report-body" id="reportBody"></div>
+        </article>
+      </section>
+
+      <dialog class="print-language-dialog" id="printLanguageDialog">
+        <form method="dialog">
+          <h2>Velg språk for PDF</h2>
+          <p>Rapporten genereres på valgt språk før utskriftsvinduet åpnes.</p>
+          <div class="dialog-actions">
+            <button class="secondary-button" type="button" data-report-print-language="no">Norsk rapport</button>
+            <button class="secondary-button" type="button" data-report-print-language="en">English report</button>
+            <button class="ghost-button" type="submit">Avbryt</button>
+          </div>
+        </form>
+      </dialog>
+
       <section class="calculator offer-calculator tab-panel" id="offerPanel" data-tab-panel="offer" hidden>
         <form class="panel" id="offerForm">
           <label>
-            Dagens norske grunnlønn
+            Dagens norske lønn
             <div class="money-input">
               <input id="offerCurrentSalary" type="number" min="0" step="10000" value="1000000" />
               <span>kr/år</span>
@@ -381,6 +419,10 @@
               <span>EUR/år</span>
             </div>
           </label>
+          <div class="inline-action">
+            <button class="secondary-button" id="useModelBreakEven" type="button">Hent fra kompensasjonsmodell</button>
+            <p id="offerModelNote">Knappen henter grunnlønn, tillegg, kurs og satser fra kompensasjonsmodellen. Tilbudt lønn i euro fylles alltid inn manuelt.</p>
+          </div>
 
           <label>
             EUR/NOK-kurs
@@ -591,7 +633,7 @@
           <article>
             <h2>1. Norsk lønn i dag</h2>
             <dl>
-              <dt>Grunnlønn</dt>
+              <dt>Lønnsgrunnlag</dt>
               <dd id="printAnnualSalary">0 kr</dd>
               <dt>Total skatt</dt>
               <dd id="printTotalTax">0 kr</dd>
@@ -642,11 +684,11 @@
         </div>
 
         <footer>
-          <p>Forutsetninger: 22 % alminnelig skatt etter minstefradrag/personfradrag, 7,6 % trygdeavgift, trinnskatt 2026, MPK 3,3 % opp til 12G, innskuddspensjon 3 % til 7,1G og 15 % fra 7,1G til 12G, fridagskostpenger 177 kr per fridag. 1G = 130 160 kr.</p>
+          <p>Forutsetninger: 22 % alminnelig skatt etter minstefradrag/personfradrag, 7,6 % trygdeavgift, trinnskatt 2026, MPK 3,3 % opp til 12G, innskuddspensjon 3 % til 7,1G og 15 % fra 7,1G til 12G, fridagskostpenger 177 kr per fridag. 1G = 136 549 kr.</p>
         </footer>
       </section>
     </main>
 
-    <script src="app.js?v=20260520-16"></script>
+    <script src="app.js?v=20260522-5"></script>
   </body>
 </html>
