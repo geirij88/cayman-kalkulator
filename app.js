@@ -5,6 +5,8 @@ const SOCIAL_SECURITY_MAX_RATE_ABOVE_LIMIT = 0.25;
 const PERSONAL_ALLOWANCE = 114540;
 const MINIMUM_DEDUCTION_RATE = 0.46;
 const MINIMUM_DEDUCTION_MAX = 95700;
+const SEAFARER_DEDUCTION_RATE = 0.30;
+const SEAFARER_DEDUCTION_MAX = 86300;
 const G_AMOUNT = 136549;
 const DNB_LOW_LIMIT_G = 7.1;
 const DNB_HIGH_LIMIT_G = 12;
@@ -46,7 +48,9 @@ const fields = {
   offerNavRate: document.querySelector("#offerNavRate"),
   offerRate: document.querySelector("#offerRate"),
   offerSalaryEur: document.querySelector("#offerSalaryEur"),
+  offerSeafarerDeduction: document.querySelector("#offerSeafarerDeduction"),
   safetyRepresentative: document.querySelector("#safetyRepresentative"),
+  seafarerDeduction: document.querySelector("#seafarerDeduction"),
 };
 
 const output = {
@@ -54,6 +58,7 @@ const output = {
   commonTax: document.querySelector("#commonTax"),
   commonTaxBasis: document.querySelector("#commonTaxBasis"),
   standardDeduction: document.querySelector("#standardDeduction"),
+  seafarerDeduction: document.querySelector("#seafarerDeductionValue"),
   socialTax: document.querySelector("#socialTax"),
   bracketTax: document.querySelector("#bracketTax"),
   bracketTaxLabel: document.querySelector("#bracketTaxLabel"),
@@ -121,6 +126,7 @@ const output = {
   printNavCost: document.querySelector("#printNavCost"),
   printNetSalary: document.querySelector("#printNetSalary"),
   printPensionCost: document.querySelector("#printPensionCost"),
+  printSeafarerDeduction: document.querySelector("#printSeafarerDeduction"),
   printTotalTax: document.querySelector("#printTotalTax"),
   reportBody: document.querySelector("#reportBody"),
   navDirectCost: document.querySelector("#navDirectCost"),
@@ -155,8 +161,10 @@ const output = {
   offerStatusCard: document.querySelector("#offerStatusCard"),
   offerStatusText: document.querySelector("#offerStatusText"),
   offerStandardDeduction: document.querySelector("#offerStandardDeduction"),
+  offerSeafarerDeduction: document.querySelector("#offerSeafarerDeductionValue"),
   offerTax: document.querySelector("#offerTax"),
   offerTaxNote: document.querySelector("#offerTaxNote"),
+  breakEvenSeafarerDeduction: document.querySelector("#breakEvenSeafarerDeduction"),
 };
 
 const money = new Intl.NumberFormat("nb-NO", {
@@ -193,11 +201,24 @@ function numberValue(field) {
   return Number(fields[field].value) || 0;
 }
 
+function getMainTaxOptions() {
+  return {
+    useSeafarerDeduction: Boolean(fields.seafarerDeduction.checked),
+  };
+}
+
+function getOfferTaxOptions() {
+  return {
+    useSeafarerDeduction: Boolean(fields.offerSeafarerDeduction.checked),
+  };
+}
+
 function getModelSnapshot() {
   const annualSalary = numberValue("annualSalary");
   const eurRate = numberValue("eurRate") || 1;
   const freeDayCount = numberValue("freeDayCount");
   const navRate = numberValue("navRate") / 100;
+  const taxOptions = getMainTaxOptions();
   const freeDayCost = freeDayCount * FREE_DAY_ALLOWANCE_RATE;
   const safetyRepresentativeCost = fields.safetyRepresentative.checked
     ? SAFETY_REPRESENTATIVE_COMPENSATION * MONTHS_PER_YEAR
@@ -206,7 +227,7 @@ function getModelSnapshot() {
   const dnbPension = calculateDnbPension(annualSalary);
   const mpk = calculateMpk(annualSalary);
   const fixedPensionCost = mpk.value + dnbPension.total;
-  const breakEvenSalary = calculateOfferBreakEven(currentTotalSalary, navRate, fixedPensionCost);
+  const breakEvenSalary = calculateOfferBreakEven(currentTotalSalary, navRate, fixedPensionCost, taxOptions);
 
   return {
     annualSalary,
@@ -215,6 +236,7 @@ function getModelSnapshot() {
     eurRate,
     fixedPensionCost,
     navRate,
+    taxOptions,
   };
 }
 
@@ -233,12 +255,21 @@ function calculateStandardDeduction(income) {
   return Math.min(income, calculateMinimumDeduction(income) + PERSONAL_ALLOWANCE);
 }
 
-function calculateOrdinaryTaxBasis(income) {
-  return Math.max(0, income - calculateStandardDeduction(income));
+function calculateSeafarerDeduction(income, taxOptions = {}) {
+  if (!taxOptions.useSeafarerDeduction) return 0;
+  return Math.min(income * SEAFARER_DEDUCTION_RATE, SEAFARER_DEDUCTION_MAX);
 }
 
-function calculateCommonTax(income) {
-  return calculateOrdinaryTaxBasis(income) * TAX_RATE_COMMON;
+function calculateOrdinaryDeduction(income, taxOptions = {}) {
+  return Math.min(income, calculateStandardDeduction(income) + calculateSeafarerDeduction(income, taxOptions));
+}
+
+function calculateOrdinaryTaxBasis(income, taxOptions = {}) {
+  return Math.max(0, income - calculateOrdinaryDeduction(income, taxOptions));
+}
+
+function calculateCommonTax(income, taxOptions = {}) {
+  return calculateOrdinaryTaxBasis(income, taxOptions) * TAX_RATE_COMMON;
 }
 
 function calculateSocialSecurityTax(income) {
@@ -255,16 +286,35 @@ function findTaxBracket(income) {
   return index >= 0 ? index + 1 : TAX_BRACKETS.length;
 }
 
-function calculateTotalTax(income) {
-  return calculateCommonTax(income) +
+function calculateTotalTax(income, taxOptions = {}) {
+  return calculateCommonTax(income, taxOptions) +
     calculateSocialSecurityTax(income) +
     calculateBracketTax(income);
 }
 
-function calculateExtraTaxBreakdown(baseSalary, grossExtra) {
+function calculateTaxDetails(income, taxOptions = {}) {
+  const standardDeduction = calculateStandardDeduction(income);
+  const seafarerDeduction = calculateSeafarerDeduction(income, taxOptions);
+  const commonTaxBasis = calculateOrdinaryTaxBasis(income, taxOptions);
+  const commonTax = commonTaxBasis * TAX_RATE_COMMON;
+  const socialTax = calculateSocialSecurityTax(income);
+  const bracketTax = calculateBracketTax(income);
+
+  return {
+    bracketTax,
+    commonTax,
+    commonTaxBasis,
+    seafarerDeduction,
+    socialTax,
+    standardDeduction,
+    totalTax: commonTax + socialTax + bracketTax,
+  };
+}
+
+function calculateExtraTaxBreakdown(baseSalary, grossExtra, taxOptions = {}) {
   return {
     bracket: calculateBracketTax(baseSalary + grossExtra) - calculateBracketTax(baseSalary),
-    common: calculateCommonTax(baseSalary + grossExtra) - calculateCommonTax(baseSalary),
+    common: calculateCommonTax(baseSalary + grossExtra, taxOptions) - calculateCommonTax(baseSalary, taxOptions),
     social: calculateSocialSecurityTax(baseSalary + grossExtra) - calculateSocialSecurityTax(baseSalary),
   };
 }
@@ -295,7 +345,7 @@ function calculateMpk(income) {
   };
 }
 
-function calculateGrossUp(baseSalary, targetNetValue) {
+function calculateGrossUp(baseSalary, targetNetValue, taxOptions = {}) {
   if (targetNetValue <= 0) {
     return {
       grossCompensation: 0,
@@ -305,15 +355,15 @@ function calculateGrossUp(baseSalary, targetNetValue) {
 
   let low = targetNetValue;
   let high = targetNetValue * 3;
-  const baseTax = calculateTotalTax(baseSalary);
+  const baseTax = calculateTotalTax(baseSalary, taxOptions);
 
-  while (high - (calculateTotalTax(baseSalary + high) - baseTax) < targetNetValue) {
+  while (high - (calculateTotalTax(baseSalary + high, taxOptions) - baseTax) < targetNetValue) {
     high *= 1.5;
   }
 
   for (let i = 0; i < 80; i += 1) {
     const middle = (low + high) / 2;
-    const extraTax = calculateTotalTax(baseSalary + middle) - baseTax;
+    const extraTax = calculateTotalTax(baseSalary + middle, taxOptions) - baseTax;
     const netExtra = middle - extraTax;
 
     if (netExtra >= targetNetValue) high = middle;
@@ -321,7 +371,7 @@ function calculateGrossUp(baseSalary, targetNetValue) {
   }
 
   const grossCompensation = high;
-  const taxOnCompensation = calculateTotalTax(baseSalary + grossCompensation) - baseTax;
+  const taxOnCompensation = calculateTotalTax(baseSalary + grossCompensation, taxOptions) - baseTax;
 
   return {
     grossCompensation,
@@ -391,6 +441,7 @@ function renderEnglishReport() {
   const eurRate = numberValue("eurRate") || 1;
   const freeDayCount = numberValue("freeDayCount");
   const navRate = numberValue("navRate") / 100;
+  const taxOptions = getMainTaxOptions();
   const freeDayCost = freeDayCount * FREE_DAY_ALLOWANCE_RATE;
   const safetyRepresentativeCost = fields.safetyRepresentative.checked
     ? SAFETY_REPRESENTATIVE_COMPENSATION * MONTHS_PER_YEAR
@@ -398,34 +449,30 @@ function renderEnglishReport() {
   const currentTotalSalary = annualSalary + freeDayCost + safetyRepresentativeCost;
   const dnbPension = calculateDnbPension(annualSalary);
   const mpk = calculateMpk(annualSalary);
-  const standardDeduction = calculateStandardDeduction(currentTotalSalary);
-  const commonTaxBasis = calculateOrdinaryTaxBasis(currentTotalSalary);
-  const commonTax = calculateCommonTax(currentTotalSalary);
-  const socialTax = calculateSocialSecurityTax(currentTotalSalary);
-  const bracketTax = calculateBracketTax(currentTotalSalary);
-  const totalTax = commonTax + socialTax + bracketTax;
-  const netSalary = currentTotalSalary - totalTax;
+  const currentTax = calculateTaxDetails(currentTotalSalary, taxOptions);
+  const netSalary = currentTotalSalary - currentTax.totalTax;
   const navCost = annualSalary * navRate;
   const mpkCost = mpk.value;
   const directValue = navCost + mpkCost + dnbPension.total;
   const fixedPensionCost = mpkCost + dnbPension.total;
-  const grossUp = calculateGrossUp(currentTotalSalary, directValue);
+  const grossUp = calculateGrossUp(currentTotalSalary, directValue, taxOptions);
   const equivalentSalary = currentTotalSalary + grossUp.grossCompensation;
-  const totalValueBreakEven = calculateOfferBreakEven(currentTotalSalary, navRate, fixedPensionCost);
-  const totalValueNetToday = currentTotalSalary - calculateTotalTax(currentTotalSalary);
+  const totalValueBreakEven = calculateOfferBreakEven(currentTotalSalary, navRate, fixedPensionCost, taxOptions);
+  const totalValueNetToday = currentTotalSalary - calculateTotalTax(currentTotalSalary, taxOptions);
   const totalValueNavAtBreakEven = totalValueBreakEven * navRate;
-  const totalValueBreakEvenTax = calculateTotalTax(totalValueBreakEven);
+  const totalValueBreakEvenTax = calculateTotalTax(totalValueBreakEven, taxOptions);
   const totalValueBreakEvenCheck = totalValueBreakEven -
     totalValueBreakEvenTax -
     totalValueNavAtBreakEven -
     fixedPensionCost;
-  const grossTaxBreakdown = calculateExtraTaxBreakdown(currentTotalSalary, grossUp.grossCompensation);
+  const grossTaxBreakdown = calculateExtraTaxBreakdown(currentTotalSalary, grossUp.grossCompensation, taxOptions);
   const compBracketTax = grossTaxBreakdown.bracket;
 
   setReportHeading("en");
   output.reportBody.innerHTML = `
     <section class="report-key-facts">
       ${reportFact("Current salary basis", kroner(currentTotalSalary), "Base salary and selected allowances")}
+      ${reportFact("Seafarers' allowance", kroner(currentTax.seafarerDeduction), taxOptions.useSeafarerDeduction ? "30%, max NOK 86,300" : "Not selected")}
       ${reportFact("Values that must be replaced", kroner(directValue), "NAV/voluntary membership and pension")}
       ${reportFact("Economic break-even point", kroner(totalValueBreakEven), `${euro(totalValueBreakEven / eurRate)} at EUR/NOK ${rateText(eurRate)}`)}
     </section>
@@ -445,15 +492,16 @@ function renderEnglishReport() {
 
     <section class="report-section">
       <h3>2. Tax on current pay</h3>
-      <p>The tax is split up to show what it consists of. The 22% ordinary income tax is not calculated on the full gross salary. Standard deductions are applied first. National Insurance contribution and bracket tax are calculated on gross/personal income.</p>
+      <p>The tax is split up to show what it consists of. The 22% ordinary income tax is not calculated on the full gross salary. Minimum deduction, personal allowance and any seafarers' allowance are applied first. National Insurance contribution and bracket tax are calculated on gross/personal income.</p>
       <dl class="report-list">
         ${reportRow("Total annual pay before tax", kroner(currentTotalSalary))}
-        ${reportRow("Standard deduction before 22% tax", kroner(standardDeduction), "report-positive")}
-        ${reportRow("Basis for 22% ordinary income tax", kroner(commonTaxBasis))}
-        ${reportRow("Ordinary income tax 22%", kroner(commonTax), "report-negative")}
-        ${reportRow("National Insurance contribution 7.6%", kroner(socialTax), "report-negative")}
-        ${reportRow(`Bracket tax (${findTaxBracket(currentTotalSalary)})`, kroner(bracketTax), "report-negative")}
-        ${reportRow("Total calculated tax", kroner(totalTax), "report-negative")}
+        ${reportRow("Minimum deduction and personal allowance", kroner(currentTax.standardDeduction), "report-positive")}
+        ${reportRow("Seafarers' allowance", kroner(currentTax.seafarerDeduction), "report-positive")}
+        ${reportRow("Basis for 22% ordinary income tax", kroner(currentTax.commonTaxBasis))}
+        ${reportRow("Ordinary income tax 22%", kroner(currentTax.commonTax), "report-negative")}
+        ${reportRow("National Insurance contribution 7.6%", kroner(currentTax.socialTax), "report-negative")}
+        ${reportRow(`Bracket tax (${findTaxBracket(currentTotalSalary)})`, kroner(currentTax.bracketTax), "report-negative")}
+        ${reportRow("Total calculated tax", kroner(currentTax.totalTax), "report-negative")}
         ${reportRow("Net pay after tax", kroner(netSalary), "report-total")}
       </dl>
     </section>
@@ -508,6 +556,7 @@ function renderEnglishReport() {
       <p>Tax is still individual, but the rates in the calculation are based on official 2026 rates. The NAV rate is selected by the user in the calculator.</p>
       <dl class="report-list">
         ${reportRow("Tax", `<a href="https://www.skatteetaten.no/nn/rettskjelder/type/uttalelser/uttalelser/forskuddsutskrivingen-2026/" target="_blank" rel="noopener noreferrer">Norwegian Tax Administration - 2026 withholding rates</a>`)}
+        ${reportRow("Seafarers' allowance", `<a href="https://www.skatteetaten.no/en/rates/seafarers-allowance/" target="_blank" rel="noopener noreferrer">Norwegian Tax Administration - seafarers' allowance</a>`)}
         ${reportRow("NAV voluntary membership", `<a href="https://www.nav.no/frivillig-medlemskap" target="_blank" rel="noopener noreferrer">NAV - voluntary membership</a>`)}
         ${reportRow("National Insurance base amount", `<a href="https://www.nav.no/grunnbelopet" target="_blank" rel="noopener noreferrer">NAV - base amount G: ${kroner(G_AMOUNT)}</a>`)}
         ${reportRow("Contribution basis", `<a href="https://lovdata.no/forskrift/2025-12-19-2784/%C2%A72" target="_blank" rel="noopener noreferrer">Lovdata - contribution basis 2026</a>`)}
@@ -516,13 +565,13 @@ function renderEnglishReport() {
   `;
 }
 
-function calculateOfferBreakEven(currentSalary, navRate, fixedPensionCost) {
-  const currentNet = currentSalary - calculateTotalTax(currentSalary);
+function calculateOfferBreakEven(currentSalary, navRate, fixedPensionCost, taxOptions = {}) {
+  const currentNet = currentSalary - calculateTotalTax(currentSalary, taxOptions);
   let low = 0;
   let high = Math.max(currentSalary * 2, fixedPensionCost * 4, 100000);
 
   const netAfterCosts = (grossSalary) =>
-    grossSalary - calculateTotalTax(grossSalary) - (grossSalary * navRate) - fixedPensionCost;
+    grossSalary - calculateTotalTax(grossSalary, taxOptions) - (grossSalary * navRate) - fixedPensionCost;
 
   while (netAfterCosts(high) < currentNet) {
     high *= 1.5;
@@ -557,6 +606,7 @@ function calculate() {
   const eurOffer = numberValue("eurOffer");
   const freeDayCount = numberValue("freeDayCount");
   const navRate = numberValue("navRate") / 100;
+  const taxOptions = getMainTaxOptions();
   const freeDayCost = freeDayCount * FREE_DAY_ALLOWANCE_RATE;
   const safetyRepresentativeCost = fields.safetyRepresentative.checked
     ? SAFETY_REPRESENTATIVE_COMPENSATION * MONTHS_PER_YEAR
@@ -564,32 +614,26 @@ function calculate() {
   const currentTotalSalary = annualSalary + freeDayCost + safetyRepresentativeCost;
   const dnbPension = calculateDnbPension(annualSalary);
   const mpk = calculateMpk(annualSalary);
-
-  const standardDeduction = calculateStandardDeduction(currentTotalSalary);
-  const commonTaxBasis = calculateOrdinaryTaxBasis(currentTotalSalary);
-  const commonTax = calculateCommonTax(currentTotalSalary);
-  const socialTax = calculateSocialSecurityTax(currentTotalSalary);
-  const bracketTax = calculateBracketTax(currentTotalSalary);
-  const totalTax = commonTax + socialTax + bracketTax;
-  const netSalary = currentTotalSalary - totalTax;
+  const currentTax = calculateTaxDetails(currentTotalSalary, taxOptions);
+  const netSalary = currentTotalSalary - currentTax.totalTax;
 
   const navCost = annualSalary * navRate;
   const mpkCost = mpk.value;
   const directValue = navCost + mpkCost + dnbPension.total;
   const fixedPensionCost = mpkCost + dnbPension.total;
-  const grossUp = calculateGrossUp(currentTotalSalary, directValue);
-  const navGrossUp = calculateGrossUp(currentTotalSalary, navCost);
+  const grossUp = calculateGrossUp(currentTotalSalary, directValue, taxOptions);
+  const navGrossUp = calculateGrossUp(currentTotalSalary, navCost, taxOptions);
   const equivalentSalary = currentTotalSalary + grossUp.grossCompensation;
-  const totalValueBreakEven = calculateOfferBreakEven(currentTotalSalary, navRate, fixedPensionCost);
-  const totalValueNetToday = currentTotalSalary - calculateTotalTax(currentTotalSalary);
+  const totalValueBreakEven = calculateOfferBreakEven(currentTotalSalary, navRate, fixedPensionCost, taxOptions);
+  const totalValueNetToday = currentTotalSalary - calculateTotalTax(currentTotalSalary, taxOptions);
   const totalValueNavAtBreakEven = totalValueBreakEven * navRate;
-  const totalValueBreakEvenTax = calculateTotalTax(totalValueBreakEven);
+  const totalValueBreakEvenTax = calculateTotalTax(totalValueBreakEven, taxOptions);
   const totalValueBreakEvenCheck = totalValueBreakEven -
     totalValueBreakEvenTax -
     totalValueNavAtBreakEven -
     fixedPensionCost;
-  const grossTaxBreakdown = calculateExtraTaxBreakdown(currentTotalSalary, grossUp.grossCompensation);
-  const navTaxBreakdown = calculateExtraTaxBreakdown(currentTotalSalary, navGrossUp.grossCompensation);
+  const grossTaxBreakdown = calculateExtraTaxBreakdown(currentTotalSalary, grossUp.grossCompensation, taxOptions);
+  const navTaxBreakdown = calculateExtraTaxBreakdown(currentTotalSalary, navGrossUp.grossCompensation, taxOptions);
   const compBracketTax = grossTaxBreakdown.bracket;
   const marginalTaxRate = grossUp.grossCompensation > 0
     ? grossUp.taxOnCompensation / grossUp.grossCompensation
@@ -599,13 +643,14 @@ function calculate() {
   output.freeDayIncomeToday.textContent = kroner(freeDayCost);
   output.safetyRepresentativeIncomeToday.textContent = kroner(safetyRepresentativeCost);
   output.totalSalaryToday.textContent = kroner(currentTotalSalary);
-  output.standardDeduction.textContent = kroner(standardDeduction);
-  output.commonTaxBasis.textContent = kroner(commonTaxBasis);
-  output.commonTax.textContent = kroner(commonTax);
-  output.socialTax.textContent = kroner(socialTax);
+  output.standardDeduction.textContent = kroner(currentTax.standardDeduction);
+  output.seafarerDeduction.textContent = kroner(currentTax.seafarerDeduction);
+  output.commonTaxBasis.textContent = kroner(currentTax.commonTaxBasis);
+  output.commonTax.textContent = kroner(currentTax.commonTax);
+  output.socialTax.textContent = kroner(currentTax.socialTax);
   output.bracketTaxLabel.textContent = `Trinnskatt (${findTaxBracket(currentTotalSalary)})`;
-  output.bracketTax.textContent = kroner(bracketTax);
-  output.totalTax.textContent = kroner(totalTax);
+  output.bracketTax.textContent = kroner(currentTax.bracketTax);
+  output.totalTax.textContent = kroner(currentTax.totalTax);
   output.netSalary.textContent = kroner(netSalary);
   output.navCost.textContent = kroner(navCost);
   output.mpkCost.textContent = kroner(mpkCost);
@@ -656,7 +701,8 @@ function calculate() {
     `Ved kurs ${rateText(eurRate)} tilsvarer likeverdig årslønn ${euro(equivalentEuroYear)}.`;
 
   output.printAnnualSalary.textContent = kroner(currentTotalSalary);
-  output.printTotalTax.textContent = kroner(totalTax);
+  output.printSeafarerDeduction.textContent = kroner(currentTax.seafarerDeduction);
+  output.printTotalTax.textContent = kroner(currentTax.totalTax);
   output.printNetSalary.textContent = kroner(netSalary);
   output.printNavCost.textContent = kroner(navCost);
   output.printMpkCost.textContent = kroner(mpkCost);
@@ -674,6 +720,7 @@ function calculate() {
   output.reportBody.innerHTML = `
     <section class="report-key-facts">
       ${reportFact("Dagens lønnsgrunnlag", kroner(currentTotalSalary), "Grunnlønn og valgte tillegg")}
+      ${reportFact("Sjømannsfradrag", kroner(currentTax.seafarerDeduction), taxOptions.useSeafarerDeduction ? "30 %, maks 86 300 kr" : "Ikke valgt")}
       ${reportFact("Verdier som må erstattes", kroner(directValue), "NAV/frivillig medlemskap og pensjon")}
       ${reportFact("Økonomisk nullpunkt", kroner(totalValueBreakEven), `${euro(totalValueBreakEven / eurRate)} ved kurs ${rateText(eurRate)}`)}
     </section>
@@ -693,15 +740,16 @@ function calculate() {
 
     <section class="report-section">
       <h3>2. Skatt på dagens lønn</h3>
-      <p>Skatten er delt opp for å vise hva den består av. 22 % alminnelig skatt beregnes ikke av hele bruttolønnen. Først trekkes standardfradrag fra. Trygdeavgift og trinnskatt beregnes av brutto/personinntekt.</p>
+      <p>Skatten er delt opp for å vise hva den består av. 22 % alminnelig skatt beregnes ikke av hele bruttolønnen. Først trekkes minstefradrag, personfradrag og eventuelt sjømannsfradrag fra. Trygdeavgift og trinnskatt beregnes av brutto/personinntekt.</p>
       <dl class="report-list">
         ${reportRow("Total årslønn før skatt", kroner(currentTotalSalary))}
-        ${reportRow("Standardfradrag før 22 % skatt", kroner(standardDeduction), "report-positive")}
-        ${reportRow("Grunnlag for 22 % alminnelig skatt", kroner(commonTaxBasis))}
-        ${reportRow("Alminnelig skatt 22 %", kroner(commonTax), "report-negative")}
-        ${reportRow("Trygdeavgift 7,6 %", kroner(socialTax), "report-negative")}
-        ${reportRow(`Trinnskatt (${findTaxBracket(currentTotalSalary)})`, kroner(bracketTax), "report-negative")}
-        ${reportRow("Total beregnet skatt", kroner(totalTax), "report-negative")}
+        ${reportRow("Minstefradrag og personfradrag", kroner(currentTax.standardDeduction), "report-positive")}
+        ${reportRow("Sjømannsfradrag", kroner(currentTax.seafarerDeduction), "report-positive")}
+        ${reportRow("Grunnlag for 22 % alminnelig skatt", kroner(currentTax.commonTaxBasis))}
+        ${reportRow("Alminnelig skatt 22 %", kroner(currentTax.commonTax), "report-negative")}
+        ${reportRow("Trygdeavgift 7,6 %", kroner(currentTax.socialTax), "report-negative")}
+        ${reportRow(`Trinnskatt (${findTaxBracket(currentTotalSalary)})`, kroner(currentTax.bracketTax), "report-negative")}
+        ${reportRow("Total beregnet skatt", kroner(currentTax.totalTax), "report-negative")}
         ${reportRow("Netto utbetalt etter skatt", kroner(netSalary), "report-total")}
       </dl>
     </section>
@@ -756,6 +804,7 @@ function calculate() {
       <p>Skatt er fortsatt individuelt, men satsene i kalkylen bygger på offentlige 2026-satser. NAV-satsen er valgt av brukeren i kalkulatoren.</p>
       <dl class="report-list">
         ${reportRow("Skatt", `<a href="https://www.skatteetaten.no/nn/rettskjelder/type/uttalelser/uttalelser/forskuddsutskrivingen-2026/" target="_blank" rel="noopener noreferrer">Skatteetaten - forskuddsutskrivingen 2026</a>`)}
+        ${reportRow("Sjømannsfradrag", `<a href="https://www.skatteetaten.no/satser/sjomannsfradrag/" target="_blank" rel="noopener noreferrer">Skatteetaten - sjømannsfradrag</a>`)}
         ${reportRow("NAV frivillig medlemskap", `<a href="https://www.nav.no/frivillig-medlemskap" target="_blank" rel="noopener noreferrer">NAV - frivillig medlemskap</a>`)}
         ${reportRow("Grunnbeløp", `<a href="https://www.nav.no/grunnbelopet" target="_blank" rel="noopener noreferrer">NAV - grunnbeløpet: ${kroner(G_AMOUNT)}</a>`)}
         ${reportRow("Avgiftsgrunnlag", `<a href="https://lovdata.no/forskrift/2025-12-19-2784/%C2%A72" target="_blank" rel="noopener noreferrer">Lovdata - avgiftsgrunnlag 2026</a>`)}
@@ -773,50 +822,44 @@ function calculateOffer() {
   const offerSalaryEur = Number(fields.offerSalaryEur.value) || 0;
   const offerRate = Number(fields.offerRate.value) || 1;
   const navRate = (Number(fields.offerNavRate.value) || 0) / 100;
-  const currentTax = calculateTotalTax(currentSalary);
-  const currentNet = currentSalary - currentTax;
+  const taxOptions = getOfferTaxOptions();
+  const currentTax = calculateTaxDetails(currentSalary, taxOptions);
+  const currentNet = currentSalary - currentTax.totalTax;
   const offerSalaryNok = offerSalaryEur * offerRate;
-  const offerStandardDeduction = calculateStandardDeduction(offerSalaryNok);
-  const offerCommonTaxBasis = calculateOrdinaryTaxBasis(offerSalaryNok);
-  const offerCommonTax = calculateCommonTax(offerSalaryNok);
-  const offerSocialTax = calculateSocialSecurityTax(offerSalaryNok);
-  const offerBracketTax = calculateBracketTax(offerSalaryNok);
-  const offerTax = offerCommonTax + offerSocialTax + offerBracketTax;
-  const offerNetAfterTax = offerSalaryNok - offerTax;
+  const offerTax = calculateTaxDetails(offerSalaryNok, taxOptions);
+  const offerNetAfterTax = offerSalaryNok - offerTax.totalTax;
   const offerNavCost = offerSalaryNok * navRate;
   const currentMpk = calculateMpk(pensionBasis).value;
   const currentPension = calculateDnbPension(pensionBasis).total;
   const fixedPensionCost = currentMpk + currentPension;
   const offerFinalNet = offerNetAfterTax - offerNavCost - fixedPensionCost;
   const difference = offerFinalNet - currentNet;
-  const breakEvenNok = calculateOfferBreakEven(currentSalary, navRate, fixedPensionCost);
+  const breakEvenNok = calculateOfferBreakEven(currentSalary, navRate, fixedPensionCost, taxOptions);
   const breakEvenEur = breakEvenNok / offerRate;
-  const breakEvenCommonTax = calculateCommonTax(breakEvenNok);
-  const breakEvenSocialTax = calculateSocialSecurityTax(breakEvenNok);
-  const breakEvenBracketTax = calculateBracketTax(breakEvenNok);
-  const breakEvenTax = calculateTotalTax(breakEvenNok);
+  const breakEvenTax = calculateTaxDetails(breakEvenNok, taxOptions);
   const breakEvenNavCost = breakEvenNok * navRate;
-  const breakEvenNetCheck = breakEvenNok - breakEvenTax - breakEvenNavCost - fixedPensionCost;
+  const breakEvenNetCheck = breakEvenNok - breakEvenTax.totalTax - breakEvenNavCost - fixedPensionCost;
   const hasOffer = offerSalaryEur > 0;
 
   output.offerCurrentSalaryNok.textContent = kroner(currentSalary);
   output.offerModelNote.textContent = modelSnapshot
     ? "Tilbudsfanen bruker nå lønn, tillegg, kurs og satser fra kompensasjonsmodellen. Tilbudt lønn i euro er fortsatt manuelt."
     : "Knappen henter grunnlønn, tillegg, kurs og satser fra kompensasjonsmodellen. Tilbudt lønn i euro fylles alltid inn manuelt.";
-  output.offerCurrentTax.textContent = kroner(currentTax);
+  output.offerCurrentTax.textContent = kroner(currentTax.totalTax);
   output.offerCurrentNet.textContent = kroner(currentNet);
   output.offerSalaryEurOut.textContent = euro(offerSalaryEur);
   output.offerSalaryNok.textContent = kroner(offerSalaryNok);
-  output.offerTax.textContent = kroner(offerTax);
-  output.offerStandardDeduction.textContent = kroner(offerStandardDeduction);
-  output.offerCommonTaxBasis.textContent = kroner(offerCommonTaxBasis);
-  output.offerCommonTax.textContent = kroner(offerCommonTax);
-  output.offerSocialTax.textContent = kroner(offerSocialTax);
+  output.offerTax.textContent = kroner(offerTax.totalTax);
+  output.offerStandardDeduction.textContent = kroner(offerTax.standardDeduction);
+  output.offerSeafarerDeduction.textContent = kroner(offerTax.seafarerDeduction);
+  output.offerCommonTaxBasis.textContent = kroner(offerTax.commonTaxBasis);
+  output.offerCommonTax.textContent = kroner(offerTax.commonTax);
+  output.offerSocialTax.textContent = kroner(offerTax.socialTax);
   output.offerBracketTaxLabel.textContent = `Herav trinnskatt (${findTaxBracket(offerSalaryNok)})`;
-  output.offerBracketTax.textContent = kroner(offerBracketTax);
+  output.offerBracketTax.textContent = kroner(offerTax.bracketTax);
   output.offerNetAfterTax.textContent = kroner(offerNetAfterTax);
   output.offerTaxNote.textContent =
-    `${kroner(offerTax)} = ${kroner(offerCommonTax)} i 22 % skatt etter standardfradrag + ${kroner(offerSocialTax)} i trygdeavgift + ${kroner(offerBracketTax)} i trinnskatt. Standardfradraget består av minstefradrag og personfradrag.`;
+    `${kroner(offerTax.totalTax)} = ${kroner(offerTax.commonTax)} i 22 % skatt etter fradrag + ${kroner(offerTax.socialTax)} i trygdeavgift + ${kroner(offerTax.bracketTax)} i trinnskatt. Minstefradrag/personfradrag${taxOptions.useSeafarerDeduction ? " og sjømannsfradrag" : ""} er trukket fra før 22 % skatt.`;
   output.offerNavCost.textContent = kroner(offerNavCost);
   output.offerMpkCost.textContent = kroner(currentMpk);
   output.offerPensionCost.textContent = kroner(currentPension);
@@ -837,11 +880,12 @@ function calculateOffer() {
   output.breakEvenFixedCosts.textContent = kroner(fixedPensionCost);
   output.breakEvenNavRate.textContent = `${percent.format(navRate * 100)} %`;
   output.breakEvenNok.textContent = kroner(breakEvenNok);
-  output.breakEvenTax.textContent = kroner(breakEvenTax);
-  output.breakEvenCommonTax.textContent = kroner(breakEvenCommonTax);
-  output.breakEvenSocialTax.textContent = kroner(breakEvenSocialTax);
+  output.breakEvenTax.textContent = kroner(breakEvenTax.totalTax);
+  output.breakEvenSeafarerDeduction.textContent = kroner(breakEvenTax.seafarerDeduction);
+  output.breakEvenCommonTax.textContent = kroner(breakEvenTax.commonTax);
+  output.breakEvenSocialTax.textContent = kroner(breakEvenTax.socialTax);
   output.breakEvenBracketTaxLabel.textContent = `Herav trinnskatt (${findTaxBracket(breakEvenNok)})`;
-  output.breakEvenBracketTax.textContent = kroner(breakEvenBracketTax);
+  output.breakEvenBracketTax.textContent = kroner(breakEvenTax.bracketTax);
   output.breakEvenNavCost.textContent = kroner(breakEvenNavCost);
   output.breakEvenPensionCost.textContent = kroner(fixedPensionCost);
   output.breakEvenNetCheck.textContent = kroner(breakEvenNetCheck);
@@ -856,6 +900,7 @@ function syncOfferDefaults() {
   fields.offerCurrentSalary.value = fields.annualSalary.value;
   fields.offerRate.value = fields.eurRate.value;
   fields.offerNavRate.value = fields.navRate.value;
+  fields.offerSeafarerDeduction.checked = fields.seafarerDeduction.checked;
   calculateOffer();
 }
 
@@ -865,6 +910,7 @@ function useModelBasisForOffer() {
   fields.offerCurrentSalary.value = Math.round(modelSnapshot.currentTotalSalary);
   fields.offerRate.value = modelSnapshot.eurRate;
   fields.offerNavRate.value = fields.navRate.value;
+  fields.offerSeafarerDeduction.checked = modelSnapshot.taxOptions.useSeafarerDeduction;
   calculateOffer();
 }
 
