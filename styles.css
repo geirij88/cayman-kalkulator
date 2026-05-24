@@ -193,13 +193,31 @@ fieldset {
   background: #fbfcfa;
   border: 1px solid var(--line);
   border-radius: 8px;
+  column-gap: 12px;
   display: grid;
   grid-template-columns: auto minmax(0, 1fr) auto;
+  row-gap: 2px;
   padding: 12px;
+}
+
+.option-card span {
+  min-width: 0;
 }
 
 .option-card strong {
   color: var(--green);
+  text-align: right;
+  white-space: nowrap;
+}
+
+.tax-deduction-option {
+  grid-template-columns: auto minmax(0, 1fr);
+}
+
+.tax-deduction-option strong {
+  grid-column: 2;
+  justify-self: start;
+  text-align: left;
 }
 
 [hidden] {
